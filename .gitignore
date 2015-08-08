@@ -1,0 +1,7 @@
+*.suo
+*.csproj.user
+*.sdf
+*.opensdf
+modinfo.sbmi
+bin/
+obj/
