@@ -7,7 +7,7 @@ using Sandbox.Common;
 //using Sandbox.ModAPI;
 //using VRage;
 
-namespace SEModGarden.Logging {
+namespace SEGarden.Logging {
 
     public static class Severity {
 

@@ -3,7 +3,7 @@ using System;
 //using System.Collections.Generic;
 //using System.Text;
 
-namespace SEModGarden.Logging {
+namespace SEGarden.Logging {
 
 	/// <summary>
 	/// Base class for Core processes

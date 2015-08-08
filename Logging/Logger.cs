@@ -10,11 +10,11 @@ using Sandbox.Definitions;
 using Sandbox.ModAPI;
 using VRage;
 
-namespace SEModGarden.Logging
+namespace SEGarden.Logging
 {
 	//
 	/// <summary>
-	/// Generates log files to be read by GamutLogViewer.
+	/// Generates log files
 	/// </summary>
 	/// <remarks>
     /// Pattern: [%time][%thread][%level][%class][%instance][%method] - %Message
@@ -28,7 +28,6 @@ namespace SEModGarden.Logging
 
         // writer
         private static String s_FileName;
-        //private static Files.Manager s_FileManager;
         private static int s_Line = 1;
 
         // config
@@ -184,7 +183,7 @@ namespace SEModGarden.Logging
             }
 
             // write log line
-            //s_FileManager.writeLine(m_StringCache, s_FileName);
+            Files.Manager.writeLine(m_StringCache.ToString(), s_FileName);
             m_StringCache.Clear();
 		}
 
