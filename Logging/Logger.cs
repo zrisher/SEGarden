@@ -156,6 +156,7 @@ namespace SEGarden.Logging
             StringCache.Append(" - Filename is " + FileName);
 
             // rotate log files if this one's too long
+            // how would this work if we're reusing an existing file? Count the lines first?
             /*
 			if (s_Line >= s_MaxLinesPerFile) {
                 //s_FileManager.doneUsing(s_FileName);
@@ -166,12 +167,6 @@ namespace SEGarden.Logging
             **/
 
             Files.Manager.writeLine(StringCache.ToString(), FileName); 
-            Files.Manager.writeLine(StringCache.ToString(), "poooonani2.txt");
-            Files.Manager.writeLine(StringCache.ToString(), "log-2015-08-09-01:46:59.log");
-            Files.Manager.writeLine(StringCache.ToString(), "log-2015-08-09-01:.log");
-            Files.Manager.writeLine(StringCache.ToString(), "log-2015-08-09-.log");
-            Files.Manager.writeLine(StringCache.ToString(), "log-2015.log");
-
             StringCache.Clear();
 		}
 
