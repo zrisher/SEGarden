@@ -8,7 +8,7 @@ using SEGarden.Notifications;
 
 namespace SEGarden.Chat.Commands {
 
-    public class Node {
+    public abstract class Node {
 
         private static ChatNotification EmptyNotice = 
             new ChatNotification() { 

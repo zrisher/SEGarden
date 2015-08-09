@@ -8,7 +8,7 @@ using Sandbox.ModAPI;
 namespace SEGarden.Notifications {
 
     public abstract class Notification {
-        //public NotificationDestination Destination;
+        //public NotificationType Type = NotificationType.None;
         public String Text;
 
         public abstract void Raise();
@@ -47,13 +47,13 @@ namespace SEGarden.Notifications {
 
 
     /*
-    public enum NotificationDestination {
+    public enum NotificationType {
         None,
         Alert,
         Chat,
         Window,
     }
-     * */
 
+    */
 
 }

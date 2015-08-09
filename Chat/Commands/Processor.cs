@@ -18,24 +18,22 @@ namespace SEGarden.Chat.Commands {
 
 	class Processor {
 
-		//private static LogicComponents.Logger s_Logger = null;
-		//private ClientMessenger m_MailMan;
-        /*
-		public Processor(ClientMessenger mailMan) {
-			log("Started", "CommandProcessor");
-			m_MailMan = mailMan;
-		}
-        */
-
-        // TODO: track multiple trees and offer add/remove methods
-        // that check for uniqueness of toplevel word and take care of refreshing
-        private Tree CommandTree;
+		private static Logging.Logger Logger = 
+            new Logging.Logger("SEGarden.Chat.Commands.Processor");
+        private List<Tree> CommandTrees = new List<Tree>();
         private bool Loaded;
+        private int _LocalSecurity;
 
+        int LocalSecurity {
+            get { return _LocalSecurity; }
+            set {
+                _LocalSecurity = value;
+                RefreshCommandTreeInfo();
+            }
+        }
 
-        public Processor() {
-			//log("Started", "CommandProcessor");
-			//m_MailMan = mailMan;
+        public Processor(int localSecurity = 0) {
+            LocalSecurity = localSecurity;
 		}
 
         public virtual void LoadData() {
@@ -43,9 +41,24 @@ namespace SEGarden.Chat.Commands {
 
 			MyAPIGateway.Utilities.MessageEntered += handleChatInput;
             Loaded = true;
-            
-			//log("Chat handler registered", "initialized");
+
+            Logger.Info("Chat handler registered", "LoadData");
 		}
+
+        public void addCommands(Tree commandTree) {
+            if (commandTree == null) return;
+            foreach (Tree storedTree in CommandTrees) {
+                if (storedTree.Word == commandTree.Word) {
+                    Logger.Warning("Failed to register new chat command tree " + 
+                        commandTree.Word +", collides with existing.", 
+                        "addCommands");
+                    return;
+                }
+            }
+            commandTree.refresh(LocalSecurity);
+            CommandTrees.Add(commandTree);
+        }
+
 
         public virtual void UnloadDataConditional() {
             if (Loaded) UnloadData();
@@ -57,131 +70,115 @@ namespace SEGarden.Chat.Commands {
 
         private void handleChatInput(string messageText, ref bool sendToOthers) {
 
+            if (messageText[0] != '/')
+                return;
+
+            List<string> inputs = ParseInput(messageText.Substring(1));
+
             WindowNotification test = new WindowNotification() {
-                Text = "Help - Classifiers",
+                BigLabel = "GardenPerformance",
+                SmallLabel = "ChatCommand Debug",
+                Text = String.Format(
+                    "Received command\nString: {0}\nParts: {1}",
+                    messageText, String.Join(", ",  inputs)
+                    )
             };
 
             test.Raise();
 
-            /*
-            if (messageText[0] != '/')
-                return;
+            List<String> remainingInputs;
+            Notification resultNotification;
 
-            string[] inputs = messageText.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-
-
-			try {
-
-				//log("Handling commands " + String.Join(" , ", cmd), "handleChatCommand");
-				if (cmd[0].ToLower() != "/gc")
-					return;
-
-				sendToOthers = false;
-				int numCommands = cmd.Length - 1;
-				//log("numCommands " + numCommands, "handleChatCommand");
-				if (numCommands > 0) {
-					switch (cmd[1].ToLower()) {
-						case "about":
-						case "help":
-							if (numCommands == 1)
-                                Utility.General.showDialog("Help", s_HelpText, "Close");
-							else
-							{
-								switch (cmd[2].ToLower())
-								{
-									case "classes":
-                                        Utility.General.showDialog("Help - Classes", helpClassesText(), "Close");
-										break;
-									case "classifiers":
-                                        Utility.General.showDialog("Help - Classifiers", helpClassifiersText(), "Close");
-										break;
-									case "cps":
-                                        Utility.General.showDialog("Help - Control Points", helpCPsText(), "Close");
-										break;
-									case "licenses":
-                                        Utility.General.showDialog("Help - Licenses", s_HelpLicensesText, "Close");
-										break;
-								}
-							}
-							break;
-
-						case "fleet":
-							if (numCommands == 1) {
-								m_MailMan.requestFleet();
-							} else {
-								switch (cmd[2].ToLower()) {
-									case "disown":
-										String entityID = "";
-										if (numCommands > 2)
-											entityID = cmd[3];
-										//m_MailMan.requestDisown(cmd[3]);
-										break;
-								}
-							}
-							break;
-
-						case "violations":
-							//m_MailMan.requestViolations();
-							break;
-
-						case "admin":
-							// admin fleet listing
-							break;
-					}
-				}
-			} catch (Exception e) {
-				//log("Exception occured: " + e, "handleChatCommand", LogicComponents.Logger.severity.ERROR);
-			}
-             * */
+            foreach (Tree commandTree in CommandTrees) {
+                if (commandTree.Matches(inputs[0])) {
+                    sendToOthers = false;
+                    remainingInputs = inputs;
+                    remainingInputs.RemoveAt(0);
+                    try {
+                        resultNotification = commandTree.Invoke(
+                            remainingInputs, LocalSecurity);
+                        resultNotification.Raise();
+                    }
+                    catch {
+                        // TODO:
+                        // log error
+                        // make note in logger that Type is indeed depedenant on 
+                        // top-level mod, and since this must always be below
+                        // it's invariant and can stay there
+                        // also make filemanager a session component to
+                        // ensure it gets cleaned up at the end
+                        // and maybe to help with loading and call earlyness too
+                    }
+                    return;
+                }
+            }
 		}
 
+        public void RefreshCommandTreeInfo() {
+            if (CommandTrees == null) return;
+            foreach (Tree commandTree in CommandTrees) {
+                commandTree.refresh(LocalSecurity);
+            }
+        }
+
         public static List<string> ParseInput(string input) {
-            return new List<String>() { "" };
-            /*
+
+            bool escape = false;
             bool quote = false;
 
-            List<string> output = new List<string>();
-
-            StringBuilder sb = new StringBuilder();
+            StringBuilder part = new StringBuilder();
+            List<string> parts = new List<string>();
 
             for (int pos = 0; pos < input.Length; pos++) {
                 char character = input[pos];
 
-                if (character == '"') {
-                    if (!quote) {
-                        quote = true;
-                    }
-                    else if (pos + 1 < input.Length && input[pos + 1] == '"') {
-                        sb.Append(character);
-                        pos++;
-                    }
-                    else {
+                if (escape) {
+                    escape = false;
+                    goto AddToPart;
+                }
+                
+                if (character == '\\') {
+                    escape = true;
+                    goto Skip;
+                }
+                
+                if (quote) {
+                    if (character == '"') {
                         quote = false;
+                        goto FinishedPart;
+                    } 
+                    else {
+                        goto AddToPart;
                     }
                 }
-                else if (char.IsWhiteSpace(character) && !quote) {
-                    output.Add(sb.ToString());
-                    sb.Clear();
+                
+                if (character == '"') {
+                    quote = true;
+                    goto Skip;
                 }
-                else {
-                    sb.Append(character);
+                
+                if (char.IsWhiteSpace(character) ) {
+                    goto FinishedPart;
                 }
+
+            AddToPart:
+                part.Append(character);
+                continue;
+            FinishedPart:
+                if (part.Length > 0) {
+                    parts.Add(part.ToString());
+                    part.Clear();
+                }
+                continue;
+            Skip:
+                continue;
             }
 
-            if (!quote && sb.Length > 0) {
-                output.Add(sb.ToString());
-            }
-            return output;
-             * */
+            // Add last part if was building
+            if (part.Length > 0) parts.Add(part.ToString());
+
+            return parts;
         }
 
-        /*
-		private void log(String message, String method = null, LogicComponents.Logger.severity level = LogicComponents.Logger.severity.DEBUG) {
-			if (s_Logger == null)
-				s_Logger = new LogicComponents.Logger("Conquest Core", "Command Processor");
-
-			s_Logger.log(level, method, message);
-		}
-         * */
 	}
 }
