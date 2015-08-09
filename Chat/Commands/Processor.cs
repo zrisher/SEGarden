@@ -30,6 +30,7 @@ namespace SEGarden.Chat.Commands {
         // TODO: track multiple trees and offer add/remove methods
         // that check for uniqueness of toplevel word and take care of refreshing
         private Tree CommandTree;
+        private bool Loaded;
 
 
         public Processor() {
@@ -37,12 +38,20 @@ namespace SEGarden.Chat.Commands {
 			//m_MailMan = mailMan;
 		}
 
-        public virtual void Init() {
+        public virtual void LoadData() {
+            if (MyAPIGateway.Utilities == null) return;
+
 			MyAPIGateway.Utilities.MessageEntered += handleChatInput;
+            Loaded = true;
+            
 			//log("Chat handler registered", "initialized");
 		}
 
-        public virtual void Dispose() {
+        public virtual void UnloadDataConditional() {
+            if (Loaded) UnloadData();
+        }
+
+        public virtual void UnloadData() {
             MyAPIGateway.Utilities.MessageEntered -= handleChatInput;
 		}
 

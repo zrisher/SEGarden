@@ -32,16 +32,19 @@ namespace SEGarden.Notifications {
     public class WindowNotification : Notification {
         public String BigLabel;
         public String SmallLabel;
-        public String Text;
         public Action<ResultEnum> Callback;
         public String ButtonLabel;
 
         public override void Raise() {
+            if (MyAPIGateway.Utilities == null) return;
+
             MyAPIGateway.Utilities.ShowMissionScreen(
                 BigLabel, "", SmallLabel, Text, Callback, ButtonLabel);
         }
 
     }
+
+
 
     /*
     public enum NotificationDestination {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
+using System.Linq;
+using System.Text;
 using System.IO;
 
 using Sandbox.Common;
@@ -24,13 +24,15 @@ namespace SEGarden.Files {
         #region Static Fields
 
         // Manage a list of handlers for each filename
-        private static Dictionary<String, TextWriter> s_TextWriters = 
-            new Dictionary<String, TextWriter>();
+        private static Dictionary<String, Handler> FileHandlers = 
+            new Dictionary<String, Handler>();
+
+        private readonly static string[] TextFileExtensions = { "txt", "log" };
 
 
          // SE loads the storage path for file operations from a Mod's assembly,
         // which it gets from any class within it
-        private static readonly Type s_ModType = typeof(Manager);
+        //private static readonly Type s_ModType = typeof(Manager);
 
         #endregion
 
@@ -48,27 +50,28 @@ namespace SEGarden.Files {
         */
 
         public static void writeLine(String output, String fileName) {
-
+            TextHandler textHandler = getHandler(fileName) as TextHandler;
+            if (textHandler != null) textHandler.WriteLine(output);
         }
         
         /// <summary>
         /// Get the handler dedicated to filename
         /// </summary>
-        public static Handler getHandler(string filename) {
-            // TODO: Any use for this? Not sure I see the point of having multiple
-            // threads within a single update frame
-            /*
-            using (s_FileHandlersLock.AcquireExclusiveUsing()) {
-                if (s_FileHandlers.ContainsKey(filename)) {
-                    return s_FileHandlers[filename];
-                }
-                else {
-                    Handler handler = new Handler(filename);
-                    s_FileHandlers.Add(filename, handler);
-                    return handler;
-                }
+        public static Handler getHandler(String filename) {
+            if (filename == null) return null;
+
+            if (FileHandlers.ContainsKey(filename))
+                return FileHandlers[filename];
+
+            String extension = System.IO.Path.GetExtension(filename);
+
+            // TODO: handle more file types
+            if (TextFileExtensions.Any(extension.Contains)) {
+                TextHandler handler = new TextHandler(filename);
+                FileHandlers.Add(filename, handler);
+                return handler;
             }
-             * */
+                
             return null;
         }
 
@@ -89,54 +92,17 @@ namespace SEGarden.Files {
             return true;
         }
 
-        private static System.IO.TextWriter getWriter(string filename) {
-            if (MyAPIGateway.Utilities == null)
-                return null;
-
-            return MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(Manager));
-        }
 
 
-        private static bool createLogFile() {
-            if (MyAPIGateway.Utilities == null)
-                return false;
-
-            //using (lock_log.AcquireExclusiveUsing())
-            //{
-            /*
-            try { deleteFile("GardenConquest.log"); }
-            catch { }
-            try { deleteFile("log.txt"); }
-            catch { }
-
-            for (int i = 0; i < 10; i++)
-                if (s_FileWriter == null)
-                    try { s_FileWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage("log-" + DateTime.Now + ".txt", typeof(Logger)); }
-                    catch { }
-                else
-                    try { deleteFile("log-" + i + ".txt"); }
-                    catch { }
-
-            return s_FileWriter != null;
-            //}
-             * */
-            return false;
-        }
-
-                /// <summary>
-        /// closes the static log file
+        /// <summary>
+        /// closes all handlers
         /// </summary>
-        private static void close() {
-            /*
-            if (s_FileWriter == null)
-                return;
-            using (s_FileLock.AcquireExclusiveUsing()) {
-                s_FileWriter.Flush();
-                s_FileWriter.Close();
-                s_FileWriter = null;
-                m_closed = true;
+        public static void Close() {
+            foreach (KeyValuePair<String, Handler> pair in FileHandlers) {
+                pair.Value.Close();
             }
-             * */
+
+            FileHandlers.Clear();
         }
 
     }
