@@ -92,7 +92,7 @@ namespace SEGarden.Logging
         /// <summary>
         /// closes the static log file
         /// </summary>
-        private static void close() {
+        public static void close() {
             //s_FileManager.doneUsing(s_FileName);
             s_Closed = true;
         }
