@@ -10,13 +10,16 @@ namespace SEGarden.Chat.Commands {
 
     public abstract class Node {
 
+        /*
         private static ChatNotification EmptyNotice = 
             new ChatNotification() { 
                 Text = "Empty biatches" 
             };
+        */
 
         protected static ChatNotification NoticeUnAuthorized = 
             new ChatNotification() {
+                Sender = "Server",
                 Text = "You are not authorized to use this command",
             };
 
@@ -29,7 +32,10 @@ namespace SEGarden.Chat.Commands {
         public Node Parent;
         public String InfoAsChild; //{ get; protected set; }
         protected String InfoAsTop; // { get; protected set; }
-        protected Notifications.Notification InfoNotice;
+        protected Notification InfoNotice = new ChatNotification() {
+            Sender = "Server",
+            Text = "Command not ready."
+        };
 
 
         protected Node(
@@ -48,13 +54,15 @@ namespace SEGarden.Chat.Commands {
             return word == Word;
         }
 
+        public abstract void Refresh(int security);
+
         /// <summary>
         /// Nodes are dependent on the Tree and local Security for some of their info
         /// If these have changed, refresh the tree for the latest info
         /// 
         /// Child classes are likely to have more complex logic after this
         /// </summary>
-        public void refresh(int security = 0) {
+        protected void RefreshFullCommand(int security = 0) {
             if (Parent == null) FullCommand = "/" + Word;
             else FullCommand = Parent.FullCommand + " " + Word;
         }
@@ -62,9 +70,7 @@ namespace SEGarden.Chat.Commands {
         /// <summary>
         /// This should always be overridden
         /// </summary>
-        public Notifications.Notification Invoke(List<String> inputs, int security) {
-            return EmptyNotice;
-        }
+        public abstract Notification Invoke(List<String> inputs, int security);
 
     }
 

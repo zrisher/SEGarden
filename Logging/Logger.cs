@@ -131,6 +131,15 @@ namespace SEGarden.Logging
             Log(message, methodName, Severity.Level.Debug); 
         }
 
+        /// <summary>
+        /// Log a Trace message
+        /// </summary>
+        /// <param name="toLog">message to log</param>
+        /// <param name="methodName">calling method</param>
+        public void Trace(string message, string methodName) {
+            Log(message, methodName, Severity.Level.Trace);
+        }
+
 		/// <summary>
 		/// Log a message
 		/// </summary>
@@ -153,7 +162,6 @@ namespace SEGarden.Logging
             appendWithBrackets(InstanceName);
             appendWithBrackets(methodName);
             StringCache.Append(" - " + message);
-            StringCache.Append(" - Filename is " + FileName);
 
             // rotate log files if this one's too long
             // how would this work if we're reusing an existing file? Count the lines first?

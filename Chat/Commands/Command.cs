@@ -27,11 +27,11 @@ namespace SEGarden.Chat.Commands {
             int security = 0
             )
             : base(word, shortInfo, longInfo, security) {
+            
+            if (argNames == null) argNames = new List<String>();
 
             ArgNames = argNames;
             Logic = logic;
-
-            if (argNames == null) argNames = new List<String>();
             ArgCount = argNames.Count;
 
             NoticeArgsError = new WindowNotification() {
@@ -43,19 +43,26 @@ namespace SEGarden.Chat.Commands {
         /// FullCommand can change depending on command's position in the Tree
         /// </summary>
         /// <param name="security"></param>
-        public void refresh(int security) {
-            base.refresh(security);
+        public override void Refresh(int security) {
+            RefreshFullCommand();
 
             String fullCommandWithArgs = FullCommand + " " + String.Join(" ", ArgNames);
             InfoAsTop = fullCommandWithArgs + "\n" + LongInfo;
             InfoAsChild = fullCommandWithArgs + " - " + ShortInfo;
+            InfoNotice = new WindowNotification() {
+                Text = InfoAsTop,
+                BigLabel = "Garden Performance",
+                SmallLabel = FullCommand
+            };
+
+
         }
 
 
-        public Notifications.Notification Invoke(List<String> inputs, int userSecurity) {
-            if (inputs == null) inputs = new List<String>();
+        public override Notification Invoke(List<String> inputs, int userSecurity) {
             if (userSecurity < Security) return NoticeUnAuthorized;
-            if (ArgCount != inputs.Count) return NoticeArgsError;
+            if (inputs == null) inputs = new List<String>();
+            if (ArgCount != inputs.Count) return InfoNotice; //NoticeArgsError;
             return Logic(inputs);
         }
 

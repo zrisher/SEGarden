@@ -23,10 +23,11 @@ namespace SEGarden.Chat.Commands {
         }
 
 
-        public Notifications.Notification Invoke(List<String> inputs, int security) {
+        public override Notifications.Notification Invoke(List<String> inputs, int security) {
             if (security < Security) return NoticeUnAuthorized;
             if (inputs == null) inputs = new List<String>();
             int inputsCount = inputs.Count;
+            return InfoNotice;
             if (inputsCount == 0) return InfoNotice;
 
             String childWord = inputs[0];
@@ -60,21 +61,28 @@ namespace SEGarden.Chat.Commands {
             addChild(branch as Node);
         }
 
-        protected void refresh(int security) {
-
+        public override void Refresh(int security) {
+            RefreshFullCommand();
+            InfoAsTop = LongInfo;
+            InfoAsChild = FullCommand + " - " + ShortInfo;
             ChildrenInfo = "";
-            foreach (Node child in Children) {
-                if (security >= child.Security)
-                    ChildrenInfo += child.InfoAsChild;
+
+            if (Children.Count > 0) {
+                foreach (Node child in Children) {
+                    child.Refresh(security);
+                    if (security >= child.Security)
+                        ChildrenInfo += child.InfoAsChild + "\n";
+                }
+
+                InfoAsTop += "\n\nCommands:\n\n" + ChildrenInfo;
+                InfoAsChild += "\n" + ChildrenInfo;
             }
 
-            InfoAsChild = Word + " - " + ShortInfo + "\n" + ChildrenInfo;
-            InfoAsTop = FullCommand + "\n" + LongInfo + "\n" + ChildrenInfo;
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
+                BigLabel = "Garden Performance",
                 SmallLabel = FullCommand
             };
-
         }
 
 

@@ -46,6 +46,9 @@ namespace SEGarden.Chat.Commands {
 		}
 
         public void addCommands(Tree commandTree) {
+
+            Logger.Info("Adding command {0} to tree {1}", "addCommands");
+
             if (commandTree == null) return;
             foreach (Tree storedTree in CommandTrees) {
                 if (storedTree.Word == commandTree.Word) {
@@ -55,7 +58,7 @@ namespace SEGarden.Chat.Commands {
                     return;
                 }
             }
-            commandTree.refresh(LocalSecurity);
+            commandTree.Refresh(LocalSecurity);
             CommandTrees.Add(commandTree);
         }
 
@@ -70,36 +73,46 @@ namespace SEGarden.Chat.Commands {
 
         private void handleChatInput(string messageText, ref bool sendToOthers) {
 
-            if (messageText[0] != '/')
+            Logger.Info("Handling chat input " + messageText, "handleChatInput");
+
+            WindowNotification test;
+
+            if (messageText[0] != '/' || messageText.Length < 2)
                 return;
 
             List<string> inputs = ParseInput(messageText.Substring(1));
-
-            WindowNotification test = new WindowNotification() {
-                BigLabel = "GardenPerformance",
-                SmallLabel = "ChatCommand Debug",
-                Text = String.Format(
-                    "Received command\nString: {0}\nParts: {1}",
-                    messageText, String.Join(", ",  inputs)
-                    )
-            };
-
-            test.Raise();
 
             List<String> remainingInputs;
             Notification resultNotification;
 
             foreach (Tree commandTree in CommandTrees) {
                 if (commandTree.Matches(inputs[0])) {
+
                     sendToOthers = false;
                     remainingInputs = inputs;
                     remainingInputs.RemoveAt(0);
                     try {
                         resultNotification = commandTree.Invoke(
                             remainingInputs, LocalSecurity);
-                        resultNotification.Raise();
+
+                        if (resultNotification != null) {
+                            resultNotification.Raise();
+                        }
+                        else {
+                            Logger.Warning("Null command invoke result for " + 
+                                commandTree.Word, "handleChatInput");
+                        }
+                        
+
                     }
-                    catch {
+                    catch (Exception e){
+                        test = new WindowNotification() {
+                            BigLabel = "GardenPerformance",
+                            SmallLabel = "ChatCommand Debug",
+                            Text = "Error invoking command for " + commandTree.Word + "\n\n" + e 
+                        };
+
+                        test.Raise();
                         // TODO:
                         // log error
                         // make note in logger that Type is indeed depedenant on 
@@ -108,8 +121,10 @@ namespace SEGarden.Chat.Commands {
                         // also make filemanager a session component to
                         // ensure it gets cleaned up at the end
                         // and maybe to help with loading and call earlyness too
+                        // move this try-catch to the invoke method on the passed action
                     }
                     return;
+
                 }
             }
 		}
@@ -117,7 +132,7 @@ namespace SEGarden.Chat.Commands {
         public void RefreshCommandTreeInfo() {
             if (CommandTrees == null) return;
             foreach (Tree commandTree in CommandTrees) {
-                commandTree.refresh(LocalSecurity);
+                commandTree.Refresh(LocalSecurity);
             }
         }
 

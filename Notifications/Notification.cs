@@ -25,12 +25,17 @@ namespace SEGarden.Notifications {
     }
 
     public class ChatNotification : Notification {
+        public String Sender;
+
         public override void Raise() {
+            if (MyAPIGateway.Utilities == null) return;
+
+            MyAPIGateway.Utilities.ShowMessage(Sender, Text);
         }
     }
 
     public class WindowNotification : Notification {
-        public String BigLabel;
+        public String BigLabel = "SE Garden";
         public String SmallLabel;
         public Action<ResultEnum> Callback;
         public String ButtonLabel;
