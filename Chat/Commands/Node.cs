@@ -17,6 +17,9 @@ namespace SEGarden.Chat.Commands {
             };
         */
 
+        protected static Logging.Logger Logger =
+            new Logging.Logger("SEGarden.Chat.Commands.Node");
+
         protected static ChatNotification NoticeUnAuthorized = 
             new ChatNotification() {
                 Sender = "Server",

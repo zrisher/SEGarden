@@ -91,39 +91,17 @@ namespace SEGarden.Chat.Commands {
                     sendToOthers = false;
                     remainingInputs = inputs;
                     remainingInputs.RemoveAt(0);
-                    try {
-                        resultNotification = commandTree.Invoke(
-                            remainingInputs, LocalSecurity);
 
-                        if (resultNotification != null) {
-                            resultNotification.Raise();
-                        }
-                        else {
-                            Logger.Warning("Null command invoke result for " + 
-                                commandTree.Word, "handleChatInput");
-                        }
-                        
+                    resultNotification = commandTree.Invoke(
+                        remainingInputs, LocalSecurity);
 
+                    if (resultNotification != null) {
+                        resultNotification.Raise();
                     }
-                    catch (Exception e){
-                        test = new WindowNotification() {
-                            BigLabel = "GardenPerformance",
-                            SmallLabel = "ChatCommand Debug",
-                            Text = "Error invoking command for " + commandTree.Word + "\n\n" + e 
-                        };
-
-                        test.Raise();
-                        // TODO:
-                        // log error
-                        // make note in logger that Type is indeed depedenant on 
-                        // top-level mod, and since this must always be below
-                        // it's invariant and can stay there
-                        // also make filemanager a session component to
-                        // ensure it gets cleaned up at the end
-                        // and maybe to help with loading and call earlyness too
-                        // move this try-catch to the invoke method on the passed action
-                    }
-                    return;
+                    else {
+                        Logger.Warning("Null command invoke result for " +
+                            commandTree.Word, "handleChatInput");
+                    }     
 
                 }
             }

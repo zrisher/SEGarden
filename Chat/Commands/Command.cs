@@ -47,7 +47,7 @@ namespace SEGarden.Chat.Commands {
             RefreshFullCommand();
 
             String fullCommandWithArgs = FullCommand + " " + String.Join(" ", ArgNames);
-            InfoAsTop = fullCommandWithArgs + "\n" + LongInfo;
+            InfoAsTop = fullCommandWithArgs + "\n\n" + LongInfo;
             InfoAsChild = fullCommandWithArgs + " - " + ShortInfo;
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
@@ -60,10 +60,22 @@ namespace SEGarden.Chat.Commands {
 
 
         public override Notification Invoke(List<String> inputs, int userSecurity) {
+            Logger.Trace("Invoking " + FullCommand + " with inputs " + 
+                String.Join("", inputs), "Invoke");
             if (userSecurity < Security) return NoticeUnAuthorized;
             if (inputs == null) inputs = new List<String>();
             if (ArgCount != inputs.Count) return InfoNotice; //NoticeArgsError;
-            return Logic(inputs);
+
+            try {
+                return Logic(inputs);
+            }
+            catch (Exception e) {
+                Logger.Error("Error invoking provided logic for'" + FullCommand + "' with inputs " + 
+                String.Join(", ", inputs) + ":", "handleChatInput");
+                Logger.Error(e.ToString(), "handleChatInput");
+            }
+
+            return null;
         }
 
 

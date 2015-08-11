@@ -19,6 +19,10 @@ namespace SEGarden.Files {
             // TODO: If SE actually picks up one top level namespace in a mod vs 
             // another, we should let filemanager provide this so we can write
             // files in multiple folders
+
+            // make note in logger that Type is indeed depedenant on 
+            // top-level mod, and since this must always be below
+            // it's invariant and can stay there
             TypeForFolderNamespace = typeof(Handler);
         }
 

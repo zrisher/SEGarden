@@ -18,6 +18,11 @@ namespace SEGarden.Files {
     /// but if file operations are attempted from outside of this mod during its
     /// update frames, bad things could happen. We don't expect calls to ModAPI 
     /// or file writing to be thread safe if dont outside of these controls.
+    /// 
+    /// 
+    ///                 // also make filemanager a session component to
+    // ensure it gets cleaned up at the end
+    // and maybe to help with loading and call earlyness too
     /// </summary>
     static class Manager {
   

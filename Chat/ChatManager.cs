@@ -40,59 +40,7 @@ namespace SEGarden.Chat {
             m_chatEvents = new List<ChatEvent>();
             m_chatCommands = new Dictionary<ChatCommand, Guid>();
 
-            ChatCommand deleteCommand = new ChatCommand("delete", Command_Delete, true);
 
-            ChatCommand tpCommand = new ChatCommand("tp", Command_Teleport, true);
-
-            ChatCommand stopCommand = new ChatCommand("stop", Command_Stop, true);
-
-            ChatCommand getIdCommand = new ChatCommand("getid", Command_GetId, true);
-
-            ChatCommand saveCommand = new ChatCommand("save", Command_Save, true);
-
-            ChatCommand ownerCommand = new ChatCommand("owner", Command_Owner, true);
-
-            ChatCommand exportCommand = new ChatCommand("export", Command_Export, true);
-
-            ChatCommand importCommand = new ChatCommand("import", Command_Import, true);
-
-            ChatCommand spawnCommand = new ChatCommand("spawn", Command_Spawn, true);
-
-            ChatCommand clearCommand = new ChatCommand("clear", Command_Clear, true);
-
-            ChatCommand listCommand = new ChatCommand("list", Command_List, true);
-
-            ChatCommand kickCommand = new ChatCommand("kick", Command_Kick, true);
-
-            ChatCommand onCommand = new ChatCommand("on", Command_On, true);
-
-            ChatCommand offCommand = new ChatCommand("off", Command_Off, true);
-
-            ChatCommand banCommand = new ChatCommand("ban", Command_Ban, true);
-
-            ChatCommand unbanCommand = new ChatCommand("unban", Command_Unban, true);
-
-            ChatCommand asyncSaveCommand = new ChatCommand("savesync", Command_SyncSave, true);
-
-            RegisterChatCommand(offCommand);
-            RegisterChatCommand(onCommand);
-            RegisterChatCommand(deleteCommand);
-            RegisterChatCommand(tpCommand);
-            RegisterChatCommand(stopCommand);
-            RegisterChatCommand(getIdCommand);
-            RegisterChatCommand(saveCommand);
-            RegisterChatCommand(ownerCommand);
-            RegisterChatCommand(exportCommand);
-            RegisterChatCommand(importCommand);
-            RegisterChatCommand(spawnCommand);
-            RegisterChatCommand(clearCommand);
-            RegisterChatCommand(listCommand);
-            RegisterChatCommand(kickCommand);
-            RegisterChatCommand(banCommand);
-            RegisterChatCommand(unbanCommand);
-            RegisterChatCommand(asyncSaveCommand);
-
-            ApplicationLog.BaseLog.Info("Finished loading ChatManager");
         }
 
         #endregion

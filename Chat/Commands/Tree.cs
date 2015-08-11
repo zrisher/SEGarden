@@ -24,11 +24,21 @@ namespace SEGarden.Chat.Commands {
 
 
         public override Notifications.Notification Invoke(List<String> inputs, int security) {
+            Logger.Trace("Invoking " + FullCommand + " with inputs " +
+                String.Join(", ", inputs), "Invoke");
+
             if (security < Security) return NoticeUnAuthorized;
             if (inputs == null) inputs = new List<String>();
             int inputsCount = inputs.Count;
-            return InfoNotice;
             if (inputsCount == 0) return InfoNotice;
+
+            /*
+            return new WindowNotification() {
+                Text = "Invoking command " + FullCommand + " with inputs " + String.Join(" ", inputs),
+                BigLabel = "Garden Performance",
+                SmallLabel = FullCommand
+            };
+            */
 
             String childWord = inputs[0];
             inputs.RemoveAt(0);
