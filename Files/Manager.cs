@@ -56,6 +56,10 @@ namespace SEGarden.Files {
         }
         */
 
+        public static void Initialize() {
+
+        }
+
         public static bool Ready(String fileName) {
             return getHandler(fileName).Ready();
         }
