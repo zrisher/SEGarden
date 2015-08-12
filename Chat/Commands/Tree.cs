@@ -11,6 +11,8 @@ namespace SEGarden.Chat.Commands {
 
         private List<Node> Children;
         private String ChildrenInfo;
+        private String ChildWords;
+        //private Notification UnknownChildNotice;
 
         public Tree(String word, String shortInfo, String longInfo, int security = 0,
             List<Node> children = null)
@@ -45,11 +47,17 @@ namespace SEGarden.Chat.Commands {
             List<String> remainingInputs = inputs;
 
             foreach (Node child in Children) {
-                if (child.Matches(childWord))
+                Logger.Trace("Checking if " + childWord + " matches " + child.Word, "Invoke");
+                if (child.Matches(childWord)) {
+                    Logger.Trace("It does! Invoking lower command", "Invoke");
                     return child.Invoke(remainingInputs, security);
+                }
             }
 
-            return InfoNotice;
+            return new ChatNotification() {
+                Text = "Unknown subcommand \"" + childWord + "\" for " + FullCommand +
+                ", did you mean on of these? : " + ChildWords
+            };
         }
 
         public void addChild(Node node) {
@@ -74,6 +82,9 @@ namespace SEGarden.Chat.Commands {
         public override void Refresh(int security) {
             RefreshFullCommand();
             InfoAsTop = LongInfo;
+            //InfoBadusage = InfoAsTop;
+            //String unknownChildText = "Unknown subcommand for " + FullCommand + 
+            //    ", did you mean on of these? :"; 
             InfoAsChild = FullCommand + " - " + ShortInfo;
             ChildrenInfo = "";
 
@@ -82,9 +93,11 @@ namespace SEGarden.Chat.Commands {
                     child.Refresh(security);
                     if (security >= child.Security)
                         ChildrenInfo += child.InfoAsChild + "\n";
+                        ChildWords += " " + child.Word;
                 }
 
                 InfoAsTop += "\n\nCommands:\n\n" + ChildrenInfo;
+                //InfoBadusage += "\n\n Incorrect usage. Commands: ";
                 InfoAsChild += "\n" + ChildrenInfo;
             }
 
@@ -93,6 +106,12 @@ namespace SEGarden.Chat.Commands {
                 BigLabel = "Garden Performance",
                 SmallLabel = FullCommand
             };
+
+            /*
+            UnknownChildNotice = new ChatNotification() {
+                Text = unknownChildText
+            };
+             * */
         }
 
 

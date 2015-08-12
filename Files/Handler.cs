@@ -10,7 +10,7 @@ namespace SEGarden.Files {
     abstract class Handler {
 
         protected String FileName;
-        protected Type TypeForFolderNamespace;
+        protected Type TypeForFolder;
         private bool Loaded;
 
         public Handler(String fileName) {
@@ -23,7 +23,7 @@ namespace SEGarden.Files {
             // make note in logger that Type is indeed depedenant on 
             // top-level mod, and since this must always be below
             // it's invariant and can stay there
-            TypeForFolderNamespace = typeof(Handler);
+            TypeForFolder = typeof(Handler);
         }
 
         public virtual void LoadData() {
@@ -37,7 +37,15 @@ namespace SEGarden.Files {
             }
         }
 
+        public abstract void Write(object ouput);
+
+        public abstract void Read<T>(ref T result);
+
         public virtual void Close() { }
+
+        public bool Ready() {
+            return (MyAPIGateway.Utilities != null);
+        }
 
     }
 
@@ -66,6 +74,24 @@ namespace SEGarden.Files {
             TextWriter.Flush();
         }
 
+        public override void Write(object output) {
+            if (TextWriter == null) {
+                if (!LoadWriter()) return;
+            }
+
+            TextWriter.Write(output);
+        }
+
+        public override void Read<T>(ref T result) {
+            if (TextReader == null) {
+                if (!LoadReader()) return;
+            }
+
+            if (result is String)
+                result = (T)(object)TextReader.ReadToEnd();
+        }
+
+
         // TODO: Allow writing more types of objects
         // TextWriter can handle pretty much anything
 
@@ -76,12 +102,35 @@ namespace SEGarden.Files {
             try {
 
                 // I believe this takes care of file creation too
-                if (TypeForFolderNamespace == null)
+                if (TypeForFolder == null)
                     TextWriter = MyAPIGateway.Utilities.
                         WriteFileInGlobalStorage(FileName);
                 else
                     TextWriter = MyAPIGateway.Utilities.
-                        WriteFileInLocalStorage(FileName, TypeForFolderNamespace);
+                        WriteFileInLocalStorage(FileName, TypeForFolder);
+
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+
+        private bool LoadReader() {
+            if (MyAPIGateway.Utilities == null)
+                return false;
+            
+            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(
+                FileName, TypeForFolder))
+                return false;
+
+            try {
+                if (TypeForFolder == null)
+                    TextReader = MyAPIGateway.Utilities.
+                        ReadFileInGlobalStorage(FileName);
+                else
+                    TextReader = MyAPIGateway.Utilities.
+                        ReadFileInLocalStorage(FileName, TypeForFolder);
 
                 return true;
             }
@@ -114,27 +163,31 @@ namespace SEGarden.Files {
 
     class BinaryHandler : Handler {
 
-        BinaryHandler(String fileName) : base(fileName) { }
-
-
-        /*
-
-
         private System.IO.BinaryReader BinaryReader;
         private System.IO.BinaryWriter BinaryWriter;
 
+        BinaryHandler(String fileName) : base(fileName) { }
 
 
-        public Handler(String fileName) {
-            FileName = fileName;
+
+        public override void Write(object output) {
+            // check for type and use appropriate writer function
+            //BinaryWriter.Write()
         }
 
-        public LoadData(){
+
+
+        public override void Read<T>(ref T result) {
+
+        }
+
+
+        public void LoadData(){
           // BinaryReader ReadBinaryFileInGlobalStorage(string file);
           // ReadBinaryFileInLocalStorage(string file, Type callingType);
           // BinaryWriter WriteBinaryFileInGlobalStorage(string file);
           // BinaryWriter WriteBinaryFileInLocalStorage(string file, Type callingType);
         }
-         * */
+
     }
 }

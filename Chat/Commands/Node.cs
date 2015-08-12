@@ -31,26 +31,40 @@ namespace SEGarden.Chat.Commands {
         public String LongInfo { get; private set; }
         public String FullCommand { get; private set; }
         public int Security { get; private set; }
+        public String DomainTitle { get; private set; }
 
         public Node Parent;
         public String InfoAsChild; //{ get; protected set; }
         protected String InfoAsTop; // { get; protected set; }
+        //protected String InfoBadusage;
         protected Notification InfoNotice = new ChatNotification() {
             Sender = "Server",
             Text = "Command not ready."
         };
+        //protected Notification BadUsageNotice;
 
+    /*
+        private Notification BadUsageNotice(String input) {
+            return new WindowNotification(){
+                Text = "Unknown usage, did you mean " + "\n\n" InfoAsTop,
+                BigLabel = ModName,
+                SmallLabel = FullCommand
+            }
+        };
 
+        */
         protected Node(
             String word,
             String shortInfo = "",
             String longInfo = "",
-            int security = 0) {
+            int security = 0,
+            String domainTitle = "Chat Commands") {
 
             Word = word;
             ShortInfo = shortInfo;
             LongInfo = longInfo;
             Security = security;
+            DomainTitle = domainTitle;
         }
 
         public bool Matches(String word) {

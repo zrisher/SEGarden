@@ -25,7 +25,7 @@ namespace SEGarden.Notifications {
     }
 
     public class ChatNotification : Notification {
-        public String Sender;
+        public String Sender = "Server";
 
         public override void Raise() {
             if (MyAPIGateway.Utilities == null) return;

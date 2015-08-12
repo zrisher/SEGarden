@@ -15,7 +15,8 @@ namespace SEGarden.Chat.Commands {
         private List<String> ArgNames;
         private int ArgCount;
         private RunLogic Logic;
-        private Notifications.Notification NoticeArgsError;
+        private Notifications.Notification ArgsErrorNotice;
+        private Notifications.Notification InvokeErrorNotice;
 
 
         public Command(
@@ -34,8 +35,13 @@ namespace SEGarden.Chat.Commands {
             Logic = logic;
             ArgCount = argNames.Count;
 
-            NoticeArgsError = new WindowNotification() {
+            ArgsErrorNotice = new ChatNotification() {
                 Text = "Expected " + ArgCount + " arguments."
+            };
+
+            InvokeErrorNotice = new ChatNotification() {
+                Text = "Error invoking command.",
+                Sender = "Server"
             };
         }
 
@@ -48,6 +54,7 @@ namespace SEGarden.Chat.Commands {
 
             String fullCommandWithArgs = FullCommand + " " + String.Join(" ", ArgNames);
             InfoAsTop = fullCommandWithArgs + "\n\n" + LongInfo;
+            //InfoBadusage = "Incorrect usage.\n\n" + InfoAsTop;
             InfoAsChild = fullCommandWithArgs + " - " + ShortInfo;
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
@@ -55,7 +62,9 @@ namespace SEGarden.Chat.Commands {
                 SmallLabel = FullCommand
             };
 
-
+            ArgsErrorNotice = new ChatNotification() {
+                Text = "Expected " + ArgCount + " arguments -\n" + fullCommandWithArgs
+            };
         }
 
 
@@ -64,7 +73,7 @@ namespace SEGarden.Chat.Commands {
                 String.Join("", inputs), "Invoke");
             if (userSecurity < Security) return NoticeUnAuthorized;
             if (inputs == null) inputs = new List<String>();
-            if (ArgCount != inputs.Count) return InfoNotice; //NoticeArgsError;
+            if (ArgCount != inputs.Count) return ArgsErrorNotice;
 
             try {
                 return Logic(inputs);
@@ -73,9 +82,9 @@ namespace SEGarden.Chat.Commands {
                 Logger.Error("Error invoking provided logic for'" + FullCommand + "' with inputs " + 
                 String.Join(", ", inputs) + ":", "handleChatInput");
                 Logger.Error(e.ToString(), "handleChatInput");
-            }
 
-            return null;
+                return InvokeErrorNotice;
+            }
         }
 
 
