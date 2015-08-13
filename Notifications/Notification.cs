@@ -14,6 +14,10 @@ namespace SEGarden.Notifications {
         public abstract void Raise();
     }
 
+    public class EmptyNotification : Notification {
+        public override void Raise() { }
+    }
+
     public class AlertNotification : Notification {
         public MyFontEnum Color = MyFontEnum.White;
         public int DisplaySeconds = 2;

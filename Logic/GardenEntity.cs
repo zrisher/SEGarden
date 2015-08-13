@@ -29,7 +29,7 @@ namespace SEGarden.Logic {
         private enum RunStatus : byte { NotInitialized, Initialized, Terminated }
         private RunStatus Status = RunStatus.NotInitialized;
         //private uint Frame = 0;
-        //private Logger myLogger = new Logger(null, "UpdateManager");
+        //private static Logger Log = new Logger("SEGarden.Logic.GardenEntity");
 
         // Inheriting classes should override this if True
         protected virtual bool ServerOnly() { return false; }

@@ -19,34 +19,50 @@ namespace SEGarden {
     /// LoadData, UnloadData, Update Before/After/Simulate, UpdatingStopped
     /// </summary>
 	[Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.BeforeSimulation)]
-	class InternalSession : GardenSession {
+	class MainSession : GardenSession {
 
-        private static Logger Log = new Logger("SEGarden.InternalSession");
-        //private static SEGarden.Chat.Commands.Processor CommandProcessor;
+        private static Logger Log = new Logger("SEGarden.MainSession");
 
-        /*
         protected override void Initialize() {
-            Log.Info("Intializing SE Garden", "Initialize");
-            SEGarden.Files.Manager.Initialize();
+            Log.Info("Intializing SE Garden Internal Session", "Initialize");
+            GardenGateway.Initialize();
             base.Initialize();
         }
 
         protected override void Terminate() {
-            Log.Info("Terminating SE Garden", "Initialize");
-            SEGarden.Files.Manager.Close();
+            Log.Info("Terminating SE Garden Internal Session", "Terminate");
+            GardenGateway.Terminate();
             base.Terminate();
         }
-         * */
+
+        /*
 
         public override void UpdateBeforeSimulation() {
             base.UpdateBeforeSimulation();
 
-            Log.Info("How come I never get called?", "UpdateBeforeSimulation");
         }
 
-		//public override void Init(MyObjectBuilder_SessionComponent sessionComponent) {
-		//	base.Init(sessionComponent);
-		//}
+        protected override void UpdateBeforeSimulation10() {
+            base.UpdateBeforeSimulation10();
+
+            //Log.Info("Garden internal session hit 10", "UpdateBeforeSimulation10");
+        }
+
+        protected override void UpdateBeforeSimulation100() {
+            base.UpdateBeforeSimulation100();
+
+            //Log.Info("Garden internal session hit 100", "UpdateBeforeSimulation100");
+        }
+
+        protected override void UpdateBeforeSimulation1000() {
+            base.UpdateBeforeSimulation1000();
+
+            //Log.Info("Garden internal session hit 1000", "UpdateBeforeSimulation1000");
+        }
+        
+        */
+
+
 	}
 
 }

@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SEGarden.Logging;
 using SEGarden.Notifications;
 
 namespace SEGarden.Chat.Commands {
 
     public class Command : Node {
+
+        private static Logger Log = new Logger("SEGarden.Chat.Commands");
 
         public delegate Notifications.Notification RunLogic(List<String> input);
 
@@ -28,7 +31,8 @@ namespace SEGarden.Chat.Commands {
             int security = 0
             )
             : base(word, shortInfo, longInfo, security) {
-            
+
+            Log.Trace("Running constructor for command", "ctr");
             if (argNames == null) argNames = new List<String>();
 
             ArgNames = argNames;
@@ -43,6 +47,8 @@ namespace SEGarden.Chat.Commands {
                 Text = "Error invoking command.",
                 Sender = "Server"
             };
+
+            Log.Trace("Finished running constructor for command", "ctr");
         }
 
         /// <summary>

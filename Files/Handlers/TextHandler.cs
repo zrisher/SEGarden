@@ -5,51 +5,9 @@ using System.Text;
 
 using Sandbox.ModAPI;
 
-namespace SEGarden.Files {
+namespace SEGarden.Files.Handlers {
 
-    abstract class Handler {
-
-        protected String FileName;
-        protected Type TypeForFolder;
-        private bool Loaded;
-
-        public Handler(String fileName) {
-            FileName = fileName;
-
-            // TODO: If SE actually picks up one top level namespace in a mod vs 
-            // another, we should let filemanager provide this so we can write
-            // files in multiple folders
-
-            // make note in logger that Type is indeed depedenant on 
-            // top-level mod, and since this must always be below
-            // it's invariant and can stay there
-            TypeForFolder = typeof(Handler);
-        }
-
-        public virtual void LoadData() {
-            Loaded = true;
-        }
-
-        public void ConditionalUnloadData() {
-            if (Loaded) {
-                Close();
-                Loaded = false;
-            }
-        }
-
-        public abstract void Write(object ouput);
-
-        public abstract void Read<T>(ref T result);
-
-        public virtual void Close() { }
-
-        public bool Ready() {
-            return (MyAPIGateway.Utilities != null);
-        }
-
-    }
-
-    class TextHandler : Handler {
+    class TextHandler : HandlerBase {
 
         private System.IO.TextReader TextReader;
         private System.IO.TextWriter TextWriter;
@@ -119,7 +77,7 @@ namespace SEGarden.Files {
         private bool LoadReader() {
             if (MyAPIGateway.Utilities == null)
                 return false;
-            
+
             if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(
                 FileName, TypeForFolder))
                 return false;
@@ -155,38 +113,6 @@ namespace SEGarden.Files {
                 TextReader.Close();
                 TextWriter = null;
             }
-
-            base.Close();
-        }
-
-    }
-
-    class BinaryHandler : Handler {
-
-        private System.IO.BinaryReader BinaryReader;
-        private System.IO.BinaryWriter BinaryWriter;
-
-        BinaryHandler(String fileName) : base(fileName) { }
-
-
-
-        public override void Write(object output) {
-            // check for type and use appropriate writer function
-            //BinaryWriter.Write()
-        }
-
-
-
-        public override void Read<T>(ref T result) {
-
-        }
-
-
-        public void LoadData(){
-          // BinaryReader ReadBinaryFileInGlobalStorage(string file);
-          // ReadBinaryFileInLocalStorage(string file, Type callingType);
-          // BinaryWriter WriteBinaryFileInGlobalStorage(string file);
-          // BinaryWriter WriteBinaryFileInLocalStorage(string file, Type callingType);
         }
 
     }

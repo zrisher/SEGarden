@@ -16,7 +16,8 @@ namespace SEGarden.Logic {
 	/// <summary>
     /// A layer over the MySessionComponentBase. Inherit from this to help with:
     ///   * Waiting for initialization until MyAPIGateway is ready
-    ///   * Using lower resolution updates
+    ///   * Using various resolution updates
+    ///   * Catching update errors - TODO
     /// 
     /// Heavily inspired by Rynchodon's Update Manager
     /// https://github.com/Rynchodon/Autopilot/
@@ -24,63 +25,81 @@ namespace SEGarden.Logic {
     /// I'd love to provide more of the features that he has, but need to find the
     /// time to incorporate that and make it so we can register scripts at runtime.
     /// Otherwise consumers of SEGarden will always have to edit its files.
+    /// 
+    /// We don't know what updates we're schedule for, because even if we detected
+    /// they can change. So our initialization checks have to run Before, After, and
+    /// on Sim.  We could avoid all that if we required the user to do their 
+    /// initialization checks manunally.
+    /// 
+    /// We have to maintain independent frame counts for each update time for the 
+    /// same reason. 
 	/// </summary>
 	public abstract class GardenSession : MySessionComponentBase {
 
+        private enum RunStatus : byte { 
+            NotInitialized, Initialized, Terminated 
+        }
+
         private static Logger Log = new Logger("SEGarden.Logic.GardenSession");
-
-        private enum RunStatus : byte { NotInitialized, Initialized, Terminated }
         private RunStatus Status = RunStatus.NotInitialized;
-        private uint Frame = 0;
+        private uint BeforeFrame = 0;
+        private uint AfterFrame = 0;
 
+        // TODO: Allow marking as client-only too
 
-        // Inheriting classes should override this if True
+        /// <summary>
+        /// Inheriting classes should override this if True
+        /// </summary>
         protected virtual bool ServerOnly() { return false; }
-
-		/// <summary>
-		/// For MySessionComponentBase
-		/// </summary>
-		//public ComponentManager() { }
-
 
         /// <summary>
         /// Place your custom initialization logic that relies on ModAPI here
         /// </summary>
-        protected virtual void Initialize() {
-            Log.Info("Initializing", "Initialize");
-            Status = RunStatus.Initialized;
-        }
+        protected virtual void Initialize() { }
 
-        protected virtual void Terminate() {
-            Log.Info("Terminating", "Initialize");
-            Status = RunStatus.Terminated;
-        }
+        private void TryInit() {
 
-		private void TryInit() {
-
-			if (MyAPIGateway.CubeBuilder == null || 
-                MyAPIGateway.Entities == null || 
-                MyAPIGateway.Multiplayer == null || 
-                MyAPIGateway.Parallel == null || 
-                MyAPIGateway.Players == null || 
-                MyAPIGateway.Session == null || 
-                MyAPIGateway.TerminalActionsHelper == null || 
+            if (MyAPIGateway.CubeBuilder == null ||
+                MyAPIGateway.Entities == null ||
+                MyAPIGateway.Multiplayer == null ||
+                MyAPIGateway.Parallel == null ||
+                MyAPIGateway.Players == null ||
+                MyAPIGateway.Session == null ||
+                MyAPIGateway.TerminalActionsHelper == null ||
                 MyAPIGateway.Utilities == null)
-				return;
+                return;
 
             if (MyAPIGateway.Multiplayer.MultiplayerActive) {
                 if (ServerOnly() && !MyAPIGateway.Multiplayer.IsServer) {
                     Log.Info("Terminating - not allowed on client", "TryInit");
-				    Status = RunStatus.Terminated;
-				    return;
+                    Status = RunStatus.Terminated;
+                    return;
                 }
                 Log.Info("Initializing as server", "TryInit");
             }
             Log.Info("Initializing as single player", "TryInit");
 
             Initialize();
-		}
+            Status = RunStatus.Initialized;
+        }
 
+        /// <summary>
+        /// Place your custom termination logic that relies on ModAPI here
+        /// </summary>
+        protected virtual void Terminate() { }
+
+        private void TerminateIfRunning() {
+            if (Status != RunStatus.Terminated) {
+                Terminate();
+                Log.Info("Marking terminated", "Terminate");
+                Status = RunStatus.Terminated;
+            }
+        }
+
+        /// <summary>
+        /// Inheriting classes should check this in their updates
+        /// TODO - use actions for inherited updates to remove this requirement
+        /// </summary>
         protected bool ShouldRun() {
             switch (Status) {
 				case RunStatus.NotInitialized:
@@ -101,10 +120,13 @@ namespace SEGarden.Logic {
 			}
 
             return true;
-        }
+        } 
 
         /// TODO: Add more resolutions?
-        /// 
+        /// Don't forget to check ShouldRun() when using these
+        /// TODO: We should really just have consumers register update actions,
+        /// then we can do error checking on them if requested
+
         // Every 16.6ms at 60 UPS
         protected virtual void UpdateBeforeSimulation10() { }
         protected virtual void UpdateAfterSimulation10() { }
@@ -118,7 +140,7 @@ namespace SEGarden.Logic {
         protected virtual void UpdateAfterSimulation1000() { }
 
         /// <summary>
-        /// Calls lower resolution update methods
+        /// Calls lower resolution update methods and trys init if needed
         /// </summary>
         /// <remarks>
         /// Inheriting methods must remember to call base. if they want to use the 
@@ -129,36 +151,32 @@ namespace SEGarden.Logic {
         public override void UpdateBeforeSimulation() {
             base.UpdateBeforeSimulation();
 
-            // TODO: 
-            // Doesn't seem like sim logic is running
-            // Our initialization needs to be smarter about which side of the 
-            // update it runs on, because the components could be registered for just
-            // before, just after, just simulation, or maybe even all of them
-            // Maybe we should just expect the user to call it?
-            //
-            // Also, terminate needs to be called on unload
+            BeforeFrame++;
 
-            Frame++;
+            if (!ShouldRunTryInit()) return;
 
-            if (!ShouldRun()) return;
-
-            if (Frame % 10 == 0){
+            if (BeforeFrame % 10 == 0){
                 //Log.Info("Update10", "UpdateBeforeSimulation");
                 UpdateBeforeSimulation10();
 
-                if (Frame % 100 == 0){
-                    Log.Info("Update100", "UpdateBeforeSimulation");
+                if (BeforeFrame % 100 == 0){
+                    //Log.Info("Update100", "UpdateBeforeSimulation");
                     UpdateBeforeSimulation100();
 
-                    if (Frame % 1000 == 0){
-                        Log.Info("Update1000", "UpdateBeforeSimulation");
+                    if (BeforeFrame % 1000 == 0){
+                        //Log.Info("Update1000", "UpdateBeforeSimulation");
                         UpdateBeforeSimulation1000();
-                        Frame = 0; // can only store up to 65535
+                        BeforeFrame = 0; // can only store up to 65535
                     }
                 }
             }
         }
 
+        public override void Simulate() {
+            base.Simulate();
+
+            ShouldRunTryInit();
+        }
 
         /// <summary>
 		/// Initializes if needed, issues updates.
@@ -171,25 +189,37 @@ namespace SEGarden.Logic {
         public override void UpdateAfterSimulation() {
             base.UpdateAfterSimulation();
 
+            AfterFrame++;
+
             // We try to initialize here, but it will take effect next frame.
             if (!ShouldRunTryInit()) return;
 
-            if (Frame % 10 == 0){
+            if (BeforeFrame % 10 == 0){
                 //Log.Info("Update10", "UpdateAfterSimulation");
                 UpdateAfterSimulation10();
 
-                if (Frame % 100 == 0){
-                    Log.Info("Update100", "UpdateAfterSimulation");
+                if (BeforeFrame % 100 == 0){
+                    //Log.Info("Update100", "UpdateAfterSimulation");
                     UpdateAfterSimulation100();
 
-                    if (Frame % 1000 == 0){
-                        Log.Info("Update1000", "UpdateAfterSimulation");
+                    if (BeforeFrame % 1000 == 0){
+                        //Log.Info("Update1000", "UpdateAfterSimulation");
                         UpdateAfterSimulation1000();
+                        AfterFrame = 0; // can only store up to 65535
                     }
                 }
             }
-		}	
+		}
 
+        protected override void UnloadData() {
+            base.UnloadData();
+            TerminateIfRunning();
+        }
+
+        public override void UpdatingStopped() {
+            base.UpdatingStopped();
+            TerminateIfRunning();
+        }
     }
 
 }

@@ -26,8 +26,11 @@ namespace SEGarden.Logging
 
         #region Static
 
+        // Anyone can change this to set the logging level
         public static Severity.Level Level = Severity.Level.All;
-        public static readonly String DefaultLogFileName = 
+
+        // Change this before allocating new loggers that use it
+        public static String DefaultLogFileName = 
             "log-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
 
         //private static int s_Line = 1;
@@ -174,7 +177,7 @@ namespace SEGarden.Logging
             }
             **/
 
-            Files.Manager.writeLine(StringCache.ToString(), FileName); 
+            GardenGateway.Files.writeLine(StringCache.ToString(), FileName); 
             StringCache.Clear();
 		}
 

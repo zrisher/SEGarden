@@ -13,15 +13,16 @@ using Interfaces = Sandbox.ModAPI.Interfaces;
 using InGame = Sandbox.ModAPI.Ingame;
 
 using SEGarden.Notifications;
+using SEGarden.Logging;
+using SEGarden.Chat.Commands;
 
-namespace SEGarden.Chat.Commands {
+namespace SEGarden.Chat {
 
-	class Processor {
+	class CommandProcessor {
 
-		private static Logging.Logger Logger = 
-            new Logging.Logger("SEGarden.Chat.Commands.Processor");
+		private static Logger Log = new Logger("SEGarden.Chat.Commands.Processor");
         private List<Tree> CommandTrees = new List<Tree>();
-        private bool Loaded;
+        private bool Ready;
         private int _LocalSecurity;
 
         int LocalSecurity {
@@ -32,27 +33,31 @@ namespace SEGarden.Chat.Commands {
             }
         }
 
-        public Processor(int localSecurity = 0) {
+        public CommandProcessor(int localSecurity = 0) {
+            Log.Trace("New command processor", "ctr");
             LocalSecurity = localSecurity;
 		}
 
-        public virtual void LoadData() {
-            if (MyAPIGateway.Utilities == null) return;
 
-			MyAPIGateway.Utilities.MessageEntered += handleChatInput;
-            Loaded = true;
-
-            Logger.Info("Chat handler registered", "LoadData");
+        /// <summary>
+        /// This shouldn't be called until MyAPIGateway is ready!
+        /// </summary>
+        public virtual void Initialize() {
+            if (!Ready) {
+                MyAPIGateway.Utilities.MessageEntered += handleChatInput;
+                Ready = true;
+                Log.Info("Initialized chat handler", "Initialize");
+            }
 		}
 
         public void addCommands(Tree commandTree) {
 
-            Logger.Info("Adding command {0} to tree {1}", "addCommands");
+            Log.Trace("Adding command tree " + commandTree.Word, "addCommands");
 
             if (commandTree == null) return;
             foreach (Tree storedTree in CommandTrees) {
                 if (storedTree.Word == commandTree.Word) {
-                    Logger.Warning("Failed to register new chat command tree " + 
+                    Log.Warning("Failed to register new chat command tree " + 
                         commandTree.Word +", collides with existing.", 
                         "addCommands");
                     return;
@@ -63,17 +68,17 @@ namespace SEGarden.Chat.Commands {
         }
 
 
-        public virtual void UnloadDataConditional() {
-            if (Loaded) UnloadData();
-        }
-
-        public virtual void UnloadData() {
-            MyAPIGateway.Utilities.MessageEntered -= handleChatInput;
+        public virtual void Terminate() {
+            if (Ready) {
+                MyAPIGateway.Utilities.MessageEntered -= handleChatInput;
+                Ready = false;
+                Log.Info("Terminating chat handler", "Terminate");
+            }
 		}
 
         private void handleChatInput(string messageText, ref bool sendToOthers) {
 
-            Logger.Info("Handling chat input " + messageText, "handleChatInput");
+            Log.Info("Handling chat input " + messageText, "handleChatInput");
 
             WindowNotification test;
 
@@ -99,7 +104,7 @@ namespace SEGarden.Chat.Commands {
                         resultNotification.Raise();
                     }
                     else {
-                        Logger.Warning("Null command invoke result for " +
+                        Log.Warning("Null command invoke result for " +
                             commandTree.Word, "handleChatInput");
                     }     
 

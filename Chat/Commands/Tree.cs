@@ -26,8 +26,8 @@ namespace SEGarden.Chat.Commands {
 
 
         public override Notifications.Notification Invoke(List<String> inputs, int security) {
-            Logger.Trace("Invoking " + FullCommand + " with inputs " +
-                String.Join(", ", inputs), "Invoke");
+            //Logger.Trace("Invoking " + FullCommand + " with inputs " +
+            //    String.Join(", ", inputs), "Invoke");
 
             if (security < Security) return NoticeUnAuthorized;
             if (inputs == null) inputs = new List<String>();
@@ -47,9 +47,9 @@ namespace SEGarden.Chat.Commands {
             List<String> remainingInputs = inputs;
 
             foreach (Node child in Children) {
-                Logger.Trace("Checking if " + childWord + " matches " + child.Word, "Invoke");
+                //Logger.Trace("Checking if " + childWord + " matches " + child.Word, "Invoke");
                 if (child.Matches(childWord)) {
-                    Logger.Trace("It does! Invoking lower command", "Invoke");
+                    //Logger.Trace("It does! Invoking lower command", "Invoke");
                     return child.Invoke(remainingInputs, security);
                 }
             }
