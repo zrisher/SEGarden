@@ -11,6 +11,7 @@ using Sandbox.ModAPI;
 //using InGame = Sandbox.ModAPI.Ingame;
 
 using SEGarden.Logic;
+using SEGarden.Logic.Common;
 using SEGarden.Logging;
 
 namespace SEGarden {
@@ -23,14 +24,16 @@ namespace SEGarden {
 
         private static Logger Log = new Logger("SEGarden.MainSession");
 
+        protected override RunLocation RunOn { get { return RunLocation.Any; } }
+
+        protected override bool WaitForSEGarden { get { return false; } }
+
         protected override void Initialize() {
-            Log.Info("Intializing SE Garden Internal Session", "Initialize");
             GardenGateway.Initialize();
             base.Initialize();
         }
 
         protected override void Terminate() {
-            Log.Info("Terminating SE Garden Internal Session", "Terminate");
             GardenGateway.Terminate();
             base.Terminate();
         }

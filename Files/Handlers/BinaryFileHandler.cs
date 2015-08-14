@@ -5,12 +5,12 @@ using System.Text;
 
 namespace SEGarden.Files.Handlers {
 
-    class BinaryHandler : HandlerBase {
+    class BinaryFileHandler : FileHandlerBase {
 
         private System.IO.BinaryReader BinaryReader;
         private System.IO.BinaryWriter BinaryWriter;
 
-        public BinaryHandler(String fileName) : base(fileName) { }
+        public BinaryFileHandler(String fileName) : base(fileName) { }
 
         public override void Write(object output) {
             // check for type and use appropriate writer function

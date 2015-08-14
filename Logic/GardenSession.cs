@@ -9,6 +9,7 @@ using Sandbox.ModAPI;
 //using VRage.ModAPI;
 //using VRage.ObjectBuilders;
 
+using SEGarden.Logic.Common;
 using SEGarden.Logging;
 
 namespace SEGarden.Logic {
@@ -36,9 +37,6 @@ namespace SEGarden.Logic {
 	/// </summary>
 	public abstract class GardenSession : MySessionComponentBase {
 
-        private enum RunStatus : byte { 
-            NotInitialized, Initialized, Terminated 
-        }
 
         private static Logger Log = new Logger("SEGarden.Logic.GardenSession");
         private RunStatus Status = RunStatus.NotInitialized;
@@ -48,9 +46,15 @@ namespace SEGarden.Logic {
         // TODO: Allow marking as client-only too
 
         /// <summary>
-        /// Inheriting classes should override this if True
+        /// Inheriting classes should override this
         /// </summary>
-        protected virtual bool ServerOnly() { return false; }
+        protected abstract RunLocation RunOn { get;  }
+        protected RunLocation RunningOn;
+
+        /// <summary>
+        /// Only SE Garden main component needs to override this
+        /// </summary>
+        protected virtual bool WaitForSEGarden { get { return true; } }
 
         /// <summary>
         /// Place your custom initialization logic that relies on ModAPI here
@@ -69,18 +73,27 @@ namespace SEGarden.Logic {
                 MyAPIGateway.Utilities == null)
                 return;
 
-            if (MyAPIGateway.Multiplayer.MultiplayerActive) {
-                if (ServerOnly() && !MyAPIGateway.Multiplayer.IsServer) {
-                    Log.Info("Terminating - not allowed on client", "TryInit");
-                    Status = RunStatus.Terminated;
-                    return;
-                }
-                Log.Info("Initializing as server", "TryInit");
-            }
-            Log.Info("Initializing as single player", "TryInit");
+            if (WaitForSEGarden && !SEGarden.GardenGateway.Initialized)
+                return;
 
-            Initialize();
-            Status = RunStatus.Initialized;
+            if (MyAPIGateway.Multiplayer.MultiplayerActive) {
+                if (MyAPIGateway.Multiplayer.IsServer)
+                    RunningOn = RunLocation.Server;
+                else
+                    RunningOn = RunLocation.Client;
+            } else {
+                RunningOn = RunLocation.Singleplayer;
+            }
+
+            if (RunOn == RunLocation.Any || RunOn == RunningOn) {
+                Log.Info("Initializing as " + RunningOn, "TryInit");
+                Initialize();
+                Status = RunStatus.Initialized;
+            } else {
+                Log.Info("Skipping component, running as " + RunningOn +
+                    " but registered for " + RunOn, "TryInit");
+                Status = RunStatus.Terminated;
+            }
         }
 
         /// <summary>

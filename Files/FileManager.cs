@@ -35,20 +35,20 @@ namespace SEGarden.Files {
         #endregion
 
         // Manage a list of handlers for each filename
-        private Dictionary<String, HandlerBase> FileHandlers =
-            new Dictionary<String, HandlerBase>();
+        private Dictionary<String, FileHandlerBase> FileHandlers =
+            new Dictionary<String, FileHandlerBase>();
 
         public bool Ready { get; private set; }
 
         public void Initialize() {
             Ready = true;
-            Log.Info("Initialized File Manager", "Initialize");
+            Log.Trace("Initialized File Manager", "Initialize");
         }
 
         public void writeLine(String output, String fileName) {
             if (output == null || fileName == null) return;
             if (!Ready) return;
-            TextHandler textHandler = getHandler(fileName) as TextHandler;
+            TextFileHandler textHandler = getHandler(fileName) as TextFileHandler;
             if (textHandler != null) textHandler.WriteLine(output);
         }
 
@@ -63,7 +63,7 @@ namespace SEGarden.Files {
             if (output == null || fileName == null) return;
             if (!Ready) return;
             DeleteFile(fileName);
-            HandlerBase handler = getHandler(fileName);
+            FileHandlerBase handler = getHandler(fileName);
             if (handler != null) handler.Write(output);
         }
 
@@ -71,7 +71,7 @@ namespace SEGarden.Files {
             if (fileName == null) return;
             if (!Ready) return;
             if (!Exists(fileName)) return;
-            HandlerBase handler = getHandler(fileName);
+            FileHandlerBase handler = getHandler(fileName);
             if (handler != null) handler.Read<T>(ref result);
         }
 
@@ -109,7 +109,7 @@ namespace SEGarden.Files {
         /// <summary>
         /// Get the handler dedicated to filename
         /// </summary>
-        private HandlerBase getHandler(String filename) {
+        private FileHandlerBase getHandler(String filename) {
             if (filename == null) return null;
 
             if (FileHandlers.ContainsKey(filename))
@@ -118,12 +118,12 @@ namespace SEGarden.Files {
             String extension = System.IO.Path.GetExtension(filename);
 
             if (TextFileExtensions.Any(extension.Contains)) {
-                TextHandler handler = new TextHandler(filename);
+                TextFileHandler handler = new TextFileHandler(filename);
                 FileHandlers.Add(filename, handler);
                 return handler;
             }
             else {
-                BinaryHandler handler = new BinaryHandler(filename);
+                BinaryFileHandler handler = new BinaryFileHandler(filename);
                 FileHandlers.Add(filename, handler);
                 return handler;
             }            
@@ -135,7 +135,7 @@ namespace SEGarden.Files {
         private void DropHandler(String filename) {
             if (filename == null) return;
 
-            HandlerBase handler;
+            FileHandlerBase handler;
             FileHandlers.TryGetValue(filename, out handler);
 
             if (handler == null) return;
@@ -148,9 +148,9 @@ namespace SEGarden.Files {
         /// closes all handlers
         /// </summary>
         public void Terminate() {
-            Log.Info("Terminating File Manager", "Close");
+            Log.Trace("Terminating File Manager", "Close");
 
-            foreach (KeyValuePair<String, HandlerBase> pair in FileHandlers) {
+            foreach (KeyValuePair<String, FileHandlerBase> pair in FileHandlers) {
                 pair.Value.Close();
             }
 

@@ -7,12 +7,12 @@ using Sandbox.ModAPI;
 
 namespace SEGarden.Files.Handlers {
 
-    class TextHandler : HandlerBase {
+    class TextFileHandler : FileHandlerBase {
 
         private System.IO.TextReader TextReader;
         private System.IO.TextWriter TextWriter;
 
-        public TextHandler(String fileName) : base(fileName) { }
+        public TextFileHandler(String fileName) : base(fileName) { }
 
         public void WriteLine(StringBuilder stringBuilder) {
             if (TextWriter == null) {

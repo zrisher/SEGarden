@@ -18,9 +18,9 @@ using SEGarden.Chat.Commands;
 
 namespace SEGarden.Chat {
 
-	class CommandProcessor {
+	class ChatManager {
 
-		private static Logger Log = new Logger("SEGarden.Chat.Commands.Processor");
+		private static Logger Log = new Logger("SEGarden.Chat.ChatManager");
         private List<Tree> CommandTrees = new List<Tree>();
         private bool Ready;
         private int _LocalSecurity;
@@ -33,7 +33,7 @@ namespace SEGarden.Chat {
             }
         }
 
-        public CommandProcessor(int localSecurity = 0) {
+        public ChatManager(int localSecurity = 0) {
             Log.Trace("New command processor", "ctr");
             LocalSecurity = localSecurity;
 		}
@@ -46,7 +46,7 @@ namespace SEGarden.Chat {
             if (!Ready) {
                 MyAPIGateway.Utilities.MessageEntered += handleChatInput;
                 Ready = true;
-                Log.Info("Initialized chat handler", "Initialize");
+                Log.Trace("Initialized chat handler", "Initialize");
             }
 		}
 
@@ -72,13 +72,13 @@ namespace SEGarden.Chat {
             if (Ready) {
                 MyAPIGateway.Utilities.MessageEntered -= handleChatInput;
                 Ready = false;
-                Log.Info("Terminating chat handler", "Terminate");
+                Log.Trace("Terminating chat handler", "Terminate");
             }
 		}
 
         private void handleChatInput(string messageText, ref bool sendToOthers) {
 
-            Log.Info("Handling chat input " + messageText, "handleChatInput");
+            Log.Trace("Handling chat input " + messageText, "handleChatInput");
 
             WindowNotification test;
 

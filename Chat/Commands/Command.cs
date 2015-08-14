@@ -32,7 +32,7 @@ namespace SEGarden.Chat.Commands {
             )
             : base(word, shortInfo, longInfo, security) {
 
-            Log.Trace("Running constructor for command", "ctr");
+            //Log.Trace("Running constructor for command", "ctr");
             if (argNames == null) argNames = new List<String>();
 
             ArgNames = argNames;
@@ -48,7 +48,7 @@ namespace SEGarden.Chat.Commands {
                 Sender = "Server"
             };
 
-            Log.Trace("Finished running constructor for command", "ctr");
+            //Log.Trace("Finished running constructor for command", "ctr");
         }
 
         /// <summary>

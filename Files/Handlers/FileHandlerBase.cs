@@ -7,10 +7,10 @@ using Sandbox.ModAPI;
 
 namespace SEGarden.Files.Handlers {
 
-    abstract class HandlerBase {
+    abstract class FileHandlerBase {
 
         // SE loads the storage path for file operations from a Mod's assembly
-        private readonly static Type ClassType = typeof(HandlerBase);
+        private readonly static Type ClassType = typeof(FileHandlerBase);
 
         //private bool Loaded;
 
@@ -18,7 +18,7 @@ namespace SEGarden.Files.Handlers {
         protected Type TypeForFolder;
 
 
-        public HandlerBase(String fileName) {
+        public FileHandlerBase(String fileName) {
             FileName = fileName;
             TypeForFolder = ClassType;
         }
