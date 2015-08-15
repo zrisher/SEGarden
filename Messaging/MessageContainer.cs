@@ -69,10 +69,15 @@ namespace SEGarden.Messaging {
             VRage.ByteStream stream = 
                 new VRage.ByteStream(HeaderSize + Body.Length); //, true);
 
+            Log.Trace("Serializing MessageTypeId " + MessageTypeId, "ToBytes");
             stream.addUShort(MessageTypeId);
+            Log.Trace("Serializing SourceId " + SourceId, "ToBytes");
             stream.addUlong(SourceId);
+            Log.Trace("Serializing SourceTypeID " + (ushort)SourceType, "ToBytes");
             stream.addUShort((ushort)SourceType);
+            Log.Trace("Serializing Body.Length " + (ushort)Body.Length, "ToBytes");
             stream.addUShort((ushort)Body.Length);
+            Log.Trace("Serializing Body", "ToBytes");
             stream.Write(Body, 0, Body.Length);
             return stream.Data;
         }
@@ -83,16 +88,22 @@ namespace SEGarden.Messaging {
 
             MessageContainer message = new MessageContainer();
             message.MessageTypeId = stream.getUShort();
+            Log.Trace("Deserialized MessageTypeId " + message.MessageTypeId, "ToBytes");
             message.SourceId = stream.getUlong();
+            Log.Trace("Deserialized SourceId " + message.SourceId, "ToBytes");
             message.SourceType = (RunLocation)stream.getUShort();
+            Log.Trace("Deserialized SourceTypeId " + message.SourceType, "ToBytes");
             int length = (int)stream.getUShort();
+            Log.Trace("Deserialized Body.Length " + length, "ToBytes");
             message.Body = stream.getByteArray(length);
+            Log.Trace("Deserialized Body of length " + message.Body.Length, "ToBytes");
 
             return message;
         }
 
 
         public void Send() {
+            Log.Trace("Sending Message Container", "Send");
             SourceId = (ulong)MyAPIGateway.Session.Player.PlayerID;
             SourceType = SEGarden.GardenGateway.RunningOn;
 
@@ -106,6 +117,21 @@ namespace SEGarden.Messaging {
                     break;
 
                 case MessageDestinationType.Player:
+
+                    Log.Info("Sending to player " + DestinationId, "SendMessage");
+                    Log.Info("Local player Id is " + MyAPIGateway.Session.Player.PlayerID, "SendMessage");
+
+                    // TODO: Seems there is a problem with this on singleplayer
+                    // hopefully it's not a problem in multiplayer...
+                    if (GardenGateway.RunningOn == RunLocation.Singleplayer) {
+                        Log.Warning("Sending to server instead of player since " + 
+                            "this is singleplayer, but need to make sure this isn't broken!", "SendMessage");
+
+                        MyAPIGateway.Multiplayer.SendMessageToServer(
+                            MessageDomainId, buffer, Reliable);
+                        break;
+                    }
+
                     MyAPIGateway.Multiplayer.SendMessageTo(
                         MessageDomainId, buffer, DestinationId, Reliable);
                     break;

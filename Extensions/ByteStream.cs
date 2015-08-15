@@ -73,6 +73,25 @@ namespace SEGarden.Extensions {
             return v;
         }
 
+        public static void addDouble(this VRage.ByteStream stream, double v) {
+            // I'm not entirely sure how to do this in a lossless manner
+            // We can't shift bytes on longs in C#
+            // And obviously we can't just use byte converter
+            // This seems to me like it would maintain enough precision to be workable
+
+            double intPart = Math.Truncate(v);
+            double fracPart = v - intPart;
+
+            stream.addLong((long)intPart);
+            stream.addLong((long)fracPart);
+        }
+
+        public static double getDouble(this VRage.ByteStream stream) {
+            double intPart = (double)stream.getLong();
+            long fracPart = stream.getLong();
+            return intPart + (double)(1 / fracPart);
+        }
+
         public static void addString(this VRage.ByteStream stream, string s) {
             if (s.Length > ushort.MaxValue) {
                 stream.addUShort(0);

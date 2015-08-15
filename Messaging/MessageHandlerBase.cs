@@ -50,7 +50,7 @@ namespace SEGarden.Messaging {
             MessageContainer container = MessageContainer.FromBytes(buffer);
 
             // Call internal handler
-            HandleMessage(container.MessageDomainId, container.Body, 
+            HandleMessage(container.MessageTypeId, container.Body, 
                 (long)container.SourceId, container.SourceType);
 		}
 

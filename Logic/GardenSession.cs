@@ -48,13 +48,23 @@ namespace SEGarden.Logic {
         /// <summary>
         /// Inheriting classes should override this
         /// </summary>
-        protected abstract RunLocation RunOn { get;  }
+        //protected abstract RunLocation RunOn { get;  }
+        private RunLocation RunOn;
         protected RunLocation RunningOn;
+
+        public GardenSession(RunLocation runOn, bool waitForSEGarden = true)
+            : base() {
+
+            RunOn = runOn;
+            WaitForSEGarden = waitForSEGarden;
+
+        }
 
         /// <summary>
         /// Only SE Garden main component needs to override this
         /// </summary>
-        protected virtual bool WaitForSEGarden { get { return true; } }
+        //protected virtual bool WaitForSEGarden { get { return true; } }
+        private bool WaitForSEGarden;
 
         /// <summary>
         /// Place your custom initialization logic that relies on ModAPI here
@@ -86,11 +96,11 @@ namespace SEGarden.Logic {
             }
 
             if (RunOn == RunLocation.Any || RunOn == RunningOn) {
-                Log.Info("Initializing as " + RunningOn, "TryInit");
+                Log.Trace("Initializing as " + RunningOn, "TryInit");
                 Initialize();
                 Status = RunStatus.Initialized;
             } else {
-                Log.Info("Skipping component, running as " + RunningOn +
+                Log.Trace("Skipping component, running as " + RunningOn +
                     " but registered for " + RunOn, "TryInit");
                 Status = RunStatus.Terminated;
             }
@@ -104,7 +114,7 @@ namespace SEGarden.Logic {
         private void TerminateIfRunning() {
             if (Status != RunStatus.Terminated) {
                 Terminate();
-                Log.Info("Marking terminated", "Terminate");
+                Log.Trace("Marking terminated", "Terminate");
                 Status = RunStatus.Terminated;
             }
         }
@@ -169,15 +179,15 @@ namespace SEGarden.Logic {
             if (!ShouldRunTryInit()) return;
 
             if (BeforeFrame % 10 == 0){
-                //Log.Info("Update10", "UpdateBeforeSimulation");
+                //Log.Trace("Update10", "UpdateBeforeSimulation");
                 UpdateBeforeSimulation10();
 
                 if (BeforeFrame % 100 == 0){
-                    //Log.Info("Update100", "UpdateBeforeSimulation");
+                    //Log.Trace("Update100", "UpdateBeforeSimulation");
                     UpdateBeforeSimulation100();
 
                     if (BeforeFrame % 1000 == 0){
-                        //Log.Info("Update1000", "UpdateBeforeSimulation");
+                        //Log.Trace("Update1000", "UpdateBeforeSimulation");
                         UpdateBeforeSimulation1000();
                         BeforeFrame = 0; // can only store up to 65535
                     }
@@ -208,15 +218,15 @@ namespace SEGarden.Logic {
             if (!ShouldRunTryInit()) return;
 
             if (BeforeFrame % 10 == 0){
-                //Log.Info("Update10", "UpdateAfterSimulation");
+                //Log.Trace("Update10", "UpdateAfterSimulation");
                 UpdateAfterSimulation10();
 
                 if (BeforeFrame % 100 == 0){
-                    //Log.Info("Update100", "UpdateAfterSimulation");
+                    //Log.Trace("Update100", "UpdateAfterSimulation");
                     UpdateAfterSimulation100();
 
                     if (BeforeFrame % 1000 == 0){
-                        //Log.Info("Update1000", "UpdateAfterSimulation");
+                        //Log.Trace("Update1000", "UpdateAfterSimulation");
                         UpdateAfterSimulation1000();
                         AfterFrame = 0; // can only store up to 65535
                     }

@@ -24,9 +24,7 @@ namespace SEGarden {
 
         private static Logger Log = new Logger("SEGarden.MainSession");
 
-        protected override RunLocation RunOn { get { return RunLocation.Any; } }
-
-        protected override bool WaitForSEGarden { get { return false; } }
+        public MainSession() : base(RunLocation.Any, false) { }
 
         protected override void Initialize() {
             GardenGateway.Initialize(RunningOn);
