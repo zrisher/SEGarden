@@ -24,7 +24,7 @@ namespace SEGarden.Messaging {
 
         private const int MAX_MESSAGE_SIZE = 4096; // Per SE
 
-        private static Logger Log = new Logger("SEGarden.Messaging.MessageBase");
+        private static Logger Log = new Logger("SEGarden.Messaging.MessageContainer");
 
         //protected VRage.ByteStream CurrentStream;
 
@@ -104,10 +104,19 @@ namespace SEGarden.Messaging {
 
         public void Send() {
             Log.Trace("Sending Message Container", "Send");
-            SourceId = (ulong)MyAPIGateway.Session.Player.PlayerID;
+
             SourceType = SEGarden.GardenGateway.RunningOn;
+            Log.Trace("SourceType : " + SourceType, "Send");
+
+            if (SourceType == RunLocation.Client)
+                SourceId = (ulong)MyAPIGateway.Session.Player.SteamUserId;
+            else SourceId = 0;
+
+            Log.Trace("SourceId : " + SourceId, "Send");
 
             byte[] buffer = ToBytes();
+
+            Log.Trace("DestinationType : " + DestinationType, "Send");
 
             switch (DestinationType) {
 
@@ -119,7 +128,7 @@ namespace SEGarden.Messaging {
                 case MessageDestinationType.Player:
 
                     Log.Info("Sending to player " + DestinationId, "SendMessage");
-                    Log.Info("Local player Id is " + MyAPIGateway.Session.Player.PlayerID, "SendMessage");
+                    //Log.Info("Local player Id is " + MyAPIGateway.Session.Player.SteamUserId, "SendMessage");
 
                     // TODO: Seems there is a problem with this on singleplayer
                     // hopefully it's not a problem in multiplayer...
@@ -134,8 +143,10 @@ namespace SEGarden.Messaging {
 
                     MyAPIGateway.Multiplayer.SendMessageTo(
                         MessageDomainId, buffer, DestinationId, Reliable);
+                        Log.Info("Sent message to player " + DestinationId, "SendMessage");
                     break;
-
+                
+                /*
                 case MessageDestinationType.Faction:
                     IMyFaction faction = MyAPIGateway.Session.Factions.
                         TryGetFactionById((long)DestinationId);
@@ -146,13 +157,14 @@ namespace SEGarden.Messaging {
                         return;
                     }
 
-                    foreach (long playerId in faction.MemberIds()) {
+                    foreach (ulong steamId in faction.SteamIds()) {
                         MyAPIGateway.Multiplayer.SendMessageTo(
-                            MessageDomainId, buffer, (ulong)playerId, Reliable
+                            MessageDomainId, buffer, steamId, Reliable
                             );
                     }
 
                     break;
+                 */ 
             }
 
 

@@ -37,7 +37,7 @@ namespace SEGarden.Messaging {
         /// (See ByteConverterExtenstions)
         /// </summary>
         public abstract void HandleMessage(ushort MessageTypeId, byte[] body, 
-            long senderId, RunLocation sourceType);
+            ulong senderSteamId, RunLocation sourceType);
 
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace SEGarden.Messaging {
 
             // Call internal handler
             HandleMessage(container.MessageTypeId, container.Body, 
-                (long)container.SourceId, container.SourceType);
+                container.SourceId, container.SourceType);
 		}
 
         /*

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Sandbox.ModAPI;
+
 using SEGarden.Messaging;
 
+using SEGarden.Extensions;
 using SEGarden.Logging;
 
 namespace SEGarden.Messaging {
@@ -29,7 +32,7 @@ namespace SEGarden.Messaging {
         */
 
 
-        public void Send(long destId, MessageDestinationType destType, 
+        public void Send(ulong destSteamId, MessageDestinationType destType, 
             bool reliable = true) {
 
             Log.Trace("Sending message with domain " + DomainId + 
@@ -37,7 +40,7 @@ namespace SEGarden.Messaging {
 
             MessageContainer container = new MessageContainer() {
                 Body = ToBytes(),
-                DestinationId = (ulong)destId,
+                DestinationId = destSteamId,
                 DestinationType = destType,
                 MessageDomainId = DomainId,
                 MessageTypeId = TypeId,
@@ -51,12 +54,23 @@ namespace SEGarden.Messaging {
             Send(0, MessageDestinationType.Server, reliable);
         }
 
-        public void SendToPlayer(long destId, bool reliable = true) {
-            Send(destId, MessageDestinationType.Player, reliable);
+        public void SendToPlayer(ulong steamId, bool reliable = true) {
+            Send(steamId, MessageDestinationType.Player, reliable);
         }
 
-        public void SendToFaction(long destId, bool reliable = true) {
-            Send(destId, MessageDestinationType.Faction, reliable);
+        public void SendToFaction(long factionId, bool reliable = true) {
+            IMyFaction faction = MyAPIGateway.Session.Factions.
+                TryGetFactionById(factionId);
+
+            if (faction == null) {
+                Log.Error("Failed to find faction " + factionId +
+                    " to send message to", "SendToFaction");
+                return;
+            }
+
+            foreach (ulong steamId in faction.SteamIds()) {
+                Send(steamId, MessageDestinationType.Player, reliable);
+            }
         }
     }
 }
