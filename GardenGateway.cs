@@ -8,6 +8,7 @@ using SEGarden.Chat;
 using SEGarden.Messaging;
 
 using SEGarden.Logging;
+using SEGarden.Logic.Common;
 
 namespace SEGarden {
 
@@ -35,15 +36,18 @@ namespace SEGarden {
         public static ChatManager Commands = new ChatManager();
         public static MessageManager Messages = new MessageManager();
         public static bool Initialized;
+        public static RunLocation RunningOn;
 
         /// <summary>
         /// This only needs to be called from SEGarden.Session
         /// </summary>
-        public static void Initialize() {
+        public static void Initialize(RunLocation runningOn) {
             Files.Initialize();  // logging depends on this
             Log.Info("Starting SE Garden v" + Version, "");
             Commands.Initialize();
             Messages.Initialize();
+
+            RunningOn = runningOn;
             Initialized = true;
         }
 

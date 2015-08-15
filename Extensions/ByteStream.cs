@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.Linq;
+using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
 using VRage.Library;
@@ -25,6 +25,16 @@ namespace SEGarden.Extensions {
     /// github.com/stackcollision/GardenConquest
     /// </summary>
     public static class ByteConverterExtension {
+
+        public static void addByteArray(this VRage.ByteStream stream, byte[] bytes) {
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static byte[] getByteArray(this VRage.ByteStream stream, int count) {
+            byte[] bytes = new byte[count];
+            stream.Read(bytes, 0, count);
+            return bytes;
+        }
 
         public static void addUShort(this VRage.ByteStream stream, ushort v) {
             for (byte i = 0; i < sizeof(ushort); ++i)

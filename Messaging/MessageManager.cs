@@ -25,11 +25,11 @@ namespace SEGarden.Messaging {
 
         private static Logger Log = new Logger("SEGarden.Messaging.MessageManager");
 
-        private Dictionary<ushort, Action<Byte[]>> RegisteredHandlers = 
-            new Dictionary<ushort, Action<Byte[]>>();
+        private Dictionary<ushort, MessageHandlerBase> RegisteredHandlers = 
+            new Dictionary<ushort, MessageHandlerBase>();
 
-        private Dictionary<ushort, Action<Byte[]>> HandlersToRegister =
-            new Dictionary<ushort, Action<Byte[]>>();
+        private Dictionary<ushort, MessageHandlerBase> HandlersToRegister =
+            new Dictionary<ushort, MessageHandlerBase>();
 
         private RunStatus Status = RunStatus.NotInitialized;
 
@@ -65,7 +65,7 @@ namespace SEGarden.Messaging {
             }
         }
 
-        public void AddHandler(ushort messageId, Action<Byte[]> handler) {
+        public void AddHandler(ushort messageId, MessageHandlerBase handler) {
             switch (Status) {
                 case (RunStatus.Initialized):
                     RegisterHandler(messageId, handler);
@@ -79,13 +79,18 @@ namespace SEGarden.Messaging {
             }
         }
 
-        private void RegisterHandler(ushort messageId, Action<Byte[]> handler) {
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(messageId, handler);
-            RegisteredHandlers.Add(messageId, handler);
-            Log.Trace("Registered message handler for Id " + messageId, "AddHandler");
+        private void RegisterHandler(ushort domainId, MessageHandlerBase handler) {
+            if (RegisteredHandlers.ContainsKey(domainId)) {
+                Log.Error("Cannot register another handler for message domain " + domainId, 
+                    "AddHandler");
+                return;
+            }
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(domainId, handler.ReceiveBytes);
+            RegisteredHandlers.Add(domainId, handler);
+            Log.Trace("Registered message handler for Id " + domainId, "AddHandler");
         }
 
-        private void QueueHandler(ushort messageId, Action<Byte[]> handler) {
+        private void QueueHandler(ushort messageId, MessageHandlerBase handler) {
             HandlersToRegister.Add(messageId, handler);
             Log.Info("Queued message handler for Id " + messageId, "QueueHandler");
         }
@@ -96,7 +101,7 @@ namespace SEGarden.Messaging {
             Log.Trace("Registering " + HandlersToRegister.Count + 
                 " Queued message handlers", "RegisterHandlersFromQueue");
 
-            foreach (KeyValuePair<ushort, Action<Byte[]>> kvp in HandlersToRegister) {
+            foreach (KeyValuePair<ushort, MessageHandlerBase> kvp in HandlersToRegister) {
                 RegisterHandler(kvp.Key, kvp.Value);
             }
 
@@ -109,8 +114,8 @@ namespace SEGarden.Messaging {
             Log.Trace("Unregistering " + RegisteredHandlers.Count +
                 " message handlers", "UnregisterHandlers");
 
-            foreach (KeyValuePair<ushort, Action<Byte[]>> kvp in RegisteredHandlers) {
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(kvp.Key, kvp.Value);
+            foreach (KeyValuePair<ushort, MessageHandlerBase> kvp in RegisteredHandlers) {
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(kvp.Key, kvp.Value.ReceiveBytes);
             }
 
             RegisteredHandlers.Clear();

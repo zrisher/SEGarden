@@ -13,37 +13,51 @@ using Interfaces = Sandbox.ModAPI.Interfaces;
 using InGame = Sandbox.ModAPI.Ingame;
 
 //using SEGarden.Core;
-
+using SEGarden.Logic.Common;
 using SEGarden.Logging;
 
 namespace SEGarden.Messaging {
 	/// <summary>
 	/// Client side message hooks.  Processed messages coming from the server.
 	/// </summary>
-	public abstract class MessengerBase {
+	public abstract class MessageHandlerBase {
 
-		private static Logger Log = new Logger("SEGarden.Messaging.MessengerBase");
+		private static Logger Log = new Logger("SEGarden.Messaging.MessageHandlerBase");
 
-        private ushort MessageId;
+        //private ushort MessageDomainId;
 
-        public MessengerBase(ushort messageId) {
-            MessageId = messageId;
-            SEGarden.GardenGateway.Messages.AddHandler(MessageId, ReceiveBytes);
+        public MessageHandlerBase(ushort messageDomainId) {
+            //MessageDomainId = messageDomainId;
+            SEGarden.GardenGateway.Messages.AddHandler(messageDomainId, this);
         }
-
 
         /// <summary>
         /// Inheriting classes need to define their own, since we won't know how
         /// to deserialize their messages due to limitations in msg byte serialization
         /// (See ByteConverterExtenstions)
         /// </summary>
-        /// <param name="buffer"></param>
-		public virtual void ReceiveBytes(byte[] buffer) {
+        public abstract void HandleMessage(ushort MessageTypeId, byte[] body, 
+            long senderId, RunLocation sourceType);
+
+
+        /// <summary>
+        /// Only SEGarden.MessageManager needs to call this
+        /// </summary>
+		public void ReceiveBytes(byte[] buffer) {
             Log.Info("Got message of size " + buffer.Length, "ReceiveBytes");
+
+            // Deserialize base message
+            MessageContainer container = MessageContainer.FromBytes(buffer);
+
+            // Call internal handler
+            HandleMessage(container.MessageDomainId, container.Body, 
+                (long)container.SourceId, container.SourceType);
 		}
 
-        protected bool IntendedForUs(MessageBase msg) {
-            /*
+        /*
+         * This should hopefully be unneccesary since we changed up factions,
+         * but maybe necessary just in case infrastructure doesn't send it right?
+        protected bool IntendedForUs(MessageContainer msg) {
             // Is this message even intended for us?
 			if (msg.DestType == BaseResponse.DEST_TYPE.FACTION) {
 				IMyFaction fac = MyAPIGateway.Session.Factions.TryGetPlayerFaction(
@@ -57,17 +71,10 @@ namespace SEGarden.Messaging {
 					return; // Message not meant for us
 				}
 			}
-             * */
+
             return true;
         }
-
-        /// <summary>
-        /// Inheriting classes should use this to parse received messages
-        /// once they've been determined to 
-        /// </summary>
-        /// <param name="buffer"></param>
-        protected abstract void ReceiveMessage(MessageBase msg);
-
+                     * */
 
 	}
 }

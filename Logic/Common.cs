@@ -5,15 +5,18 @@ using System.Text;
 
 namespace SEGarden.Logic.Common {
 
-    public enum RunLocation {
+    public enum RunLocation : ushort {
+        None,
         Any,
         Client,
         Server,
-        Singleplayer
+        Singleplayer,
     }
 
     public enum RunStatus : byte {
-        NotInitialized, Initialized, Terminated
+        NotInitialized, 
+        Initialized, 
+        Terminated
     }
 
 }

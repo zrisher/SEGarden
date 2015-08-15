@@ -29,7 +29,7 @@ namespace SEGarden {
         protected override bool WaitForSEGarden { get { return false; } }
 
         protected override void Initialize() {
-            GardenGateway.Initialize();
+            GardenGateway.Initialize(RunningOn);
             base.Initialize();
         }
 
