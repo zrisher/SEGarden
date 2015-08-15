@@ -15,8 +15,20 @@ namespace SEGarden.Messaging {
 
         private static Logger Log = new Logger("SEGarden.Messaging.MessageBase");
 
-        protected abstract ushort DomainId { get; }
-        protected abstract ushort TypeId { get; }
+        private ushort _DomainId;
+        private ushort _TypeId;
+        private bool _Reliable;
+
+        /*
+        protected ushort DomainId { get { return _DomainID; } }
+        protected ushort TypeId { get { return _TypeId; } }
+        */
+
+        public MessageBase(ushort domainId, ushort typeId, bool reliable = true) {
+            _DomainId = domainId;
+            _TypeId = typeId;
+            _Reliable = reliable;
+        }
         
         protected abstract byte[] ToBytes();
 
@@ -32,33 +44,32 @@ namespace SEGarden.Messaging {
         */
 
 
-        public void Send(ulong destSteamId, MessageDestinationType destType, 
-            bool reliable = true) {
+        public void Send(ulong destSteamId, MessageDestinationType destType) {
 
-            Log.Trace("Sending message with domain " + DomainId + 
-                " and type " + TypeId, "Send");
+            Log.Trace("Sending message with domain " + _DomainId + 
+                " and type " + _TypeId, "Send");
 
             MessageContainer container = new MessageContainer() {
                 Body = ToBytes(),
                 DestinationId = destSteamId,
                 DestinationType = destType,
-                MessageDomainId = DomainId,
-                MessageTypeId = TypeId,
-                Reliable = reliable
+                MessageDomainId = _DomainId,
+                MessageTypeId = _TypeId,
+                Reliable = _Reliable
             };
 
             container.Send();
         }
 
-        public void SendToServer(bool reliable = true) {
-            Send(0, MessageDestinationType.Server, reliable);
+        public void SendToServer() {
+            Send(0, MessageDestinationType.Server);
         }
 
-        public void SendToPlayer(ulong steamId, bool reliable = true) {
-            Send(steamId, MessageDestinationType.Player, reliable);
+        public void SendToPlayer(ulong steamId) {
+            Send(steamId, MessageDestinationType.Player);
         }
 
-        public void SendToFaction(long factionId, bool reliable = true) {
+        public void SendToFaction(long factionId) {
             IMyFaction faction = MyAPIGateway.Session.Factions.
                 TryGetFactionById(factionId);
 
@@ -69,7 +80,7 @@ namespace SEGarden.Messaging {
             }
 
             foreach (ulong steamId in faction.SteamIds()) {
-                Send(steamId, MessageDestinationType.Player, reliable);
+                Send(steamId, MessageDestinationType.Player);
             }
         }
     }

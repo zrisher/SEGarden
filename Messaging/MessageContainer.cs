@@ -116,11 +116,14 @@ namespace SEGarden.Messaging {
 
             byte[] buffer = ToBytes();
 
+            if (DestinationId == 0) DestinationType = MessageDestinationType.Server;
+
             Log.Trace("DestinationType : " + DestinationType, "Send");
 
             switch (DestinationType) {
 
                 case MessageDestinationType.Server:
+                    Log.Info("Sending to server " + DestinationId, "SendMessage");
                     MyAPIGateway.Multiplayer.SendMessageToServer(
                         MessageDomainId, buffer, Reliable);
                     break;
@@ -132,6 +135,7 @@ namespace SEGarden.Messaging {
 
                     // TODO: Seems there is a problem with this on singleplayer
                     // hopefully it's not a problem in multiplayer...
+                    /*
                     if (GardenGateway.RunningOn == RunLocation.Singleplayer) {
                         Log.Warning("Sending to server instead of player since " + 
                             "this is singleplayer, but need to make sure this isn't broken!", "SendMessage");
@@ -140,31 +144,14 @@ namespace SEGarden.Messaging {
                             MessageDomainId, buffer, Reliable);
                         break;
                     }
+                     * */
 
                     MyAPIGateway.Multiplayer.SendMessageTo(
                         MessageDomainId, buffer, DestinationId, Reliable);
                         Log.Info("Sent message to player " + DestinationId, "SendMessage");
                     break;
                 
-                /*
-                case MessageDestinationType.Faction:
-                    IMyFaction faction = MyAPIGateway.Session.Factions.
-                        TryGetFactionById((long)DestinationId);
 
-                    if (faction == null) {
-                        Log.Error("Failed to find faction " + DestinationId +
-                            " to send message to", "SendMessage");
-                        return;
-                    }
-
-                    foreach (ulong steamId in faction.SteamIds()) {
-                        MyAPIGateway.Multiplayer.SendMessageTo(
-                            MessageDomainId, buffer, steamId, Reliable
-                            );
-                    }
-
-                    break;
-                 */ 
             }
 
 

@@ -54,27 +54,5 @@ namespace SEGarden.Messaging {
                 container.SourceId, container.SourceType);
 		}
 
-        /*
-         * This should hopefully be unneccesary since we changed up factions,
-         * but maybe necessary just in case infrastructure doesn't send it right?
-        protected bool IntendedForUs(MessageContainer msg) {
-            // Is this message even intended for us?
-			if (msg.DestType == BaseResponse.DEST_TYPE.FACTION) {
-				IMyFaction fac = MyAPIGateway.Session.Factions.TryGetPlayerFaction(
-					MyAPIGateway.Session.Player.PlayerID);
-				if (fac == null || !msg.Destination.Contains(fac.FactionId)) {
-					return; // Message not meant for us
-				}
-			} else if (msg.DestType == BaseResponse.DEST_TYPE.PLAYER) {
-				long localUserId = (long)MyAPIGateway.Session.Player.PlayerID;
-				if (!msg.Destination.Contains(localUserId)) {
-					return; // Message not meant for us
-				}
-			}
-
-            return true;
-        }
-                     * */
-
 	}
 }
