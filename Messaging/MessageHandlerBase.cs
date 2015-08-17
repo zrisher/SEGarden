@@ -49,9 +49,14 @@ namespace SEGarden.Messaging {
             // Deserialize base message
             MessageContainer container = MessageContainer.FromBytes(buffer);
 
-            // Call internal handler
-            HandleMessage(container.MessageTypeId, container.Body, 
-                container.SourceId, container.SourceType);
+            try {
+                // Call internal handler
+                HandleMessage(container.MessageTypeId, container.Body,
+                    container.SourceId, container.SourceType);
+            }
+            catch (Exception e) {
+                Log.Error("Error handling message: " + e, "ReceiveBytes");
+            }
 		}
 
 	}

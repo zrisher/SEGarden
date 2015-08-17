@@ -8,24 +8,31 @@ using VRageMath;
 namespace SEGarden.Extensions.VRageMath {
     static class Vector3DExtensions {
 
+        public const int SizeInBytes = 8;
+
+        /*
         public static byte[] ToBytes(this Vector3D vector) {
             VRage.ByteStream stream = new VRage.ByteStream(sizeof(long)*6);
-            stream.addDouble(vector.X);
-            stream.addDouble(vector.Y);
-            stream.addDouble(vector.Z);
+            AddToByteStream(vector, stream);
             return stream.Data;
         }
 
         public static Vector3D FromBytes(byte[] bytes) {
             VRage.ByteStream stream = new VRage.ByteStream(bytes, bytes.Length);
+            return RemoveFromByteStream(stream);
+        }
+        */
 
-            double[] pos = new double[3];
-            pos[0] = stream.getDouble();
-            pos[1] = stream.getDouble();
-            pos[2] = stream.getDouble();
-
-            return new Vector3D(pos[0], pos[1], pos[2]);
+        public static void AddToByteStream(this Vector3D vector, VRage.ByteStream stream) {
+            stream.addDouble(vector.X);
+            stream.addDouble(vector.Y);
+            stream.addDouble(vector.Z);
         }
 
+        public static void RemoveFromByteStream(this Vector3D vector, VRage.ByteStream stream) {
+            vector.X = stream.getDouble();
+            vector.Y = stream.getDouble();
+            vector.Z = stream.getDouble();
+        }
     }
 }

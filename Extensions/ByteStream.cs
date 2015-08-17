@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+
 using VRage.Library;
+using VRageMath;
+
+using SEGarden.Extensions.VRageMath;
 
 namespace SEGarden.Extensions {
 
@@ -21,10 +26,65 @@ namespace SEGarden.Extensions {
     /// 
     /// TODO: Fix this in core
     /// 
-    /// Thanks to StackCollision for writing most of this class:
+    /// Thanks to StackCollision for writing most of the primitives:
     /// github.com/stackcollision/GardenConquest
+    /// 
+    /// Thanks to Rynchodon for the ByteUnions:
+    /// github.com/rynchodon/Autopilot
     /// </summary>
     public static class ByteConverterExtension {
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct FloatByteUnion {
+            [FieldOffset(0)]
+            private byte b0;
+            [FieldOffset(8)]
+            private byte b1;
+            [FieldOffset(16)]
+            private byte b2;
+            [FieldOffset(24)]
+            private byte b3;
+
+            [FieldOffset(0)]
+            public float Float;
+
+            public byte[] Bytes { 
+                get {return new Byte[4] { b0, b1, b2, b3}; }
+                set { b0 = value[0]; b1 = value[1]; b2 = value[2]; b3 = value[3]; }
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct DoubleByteUnion {
+            [FieldOffset(0)]
+            private byte b0;
+            [FieldOffset(8)]
+            private byte b1;
+            [FieldOffset(16)]
+            private byte b2;
+            [FieldOffset(24)]
+            private byte b3;
+            [FieldOffset(32)]
+            private byte b4;
+            [FieldOffset(40)]
+            private byte b5;
+            [FieldOffset(48)]
+            private byte b6;
+            [FieldOffset(54)]
+            private byte b7;
+
+            [FieldOffset(0)]
+            public double Double;
+
+            public byte[] Bytes {
+                get { return new Byte[8] { b0, b1, b2, b3, b4, b5, b6, b7 }; }
+                set { 
+                    b0 = value[0]; b1 = value[1]; b2 = value[2]; b3 = value[3];
+                    b4 = value[4]; b5 = value[5]; b6 = value[6]; b7 = value[7]; 
+                }
+            }
+        }
+
 
         public static void addByteArray(this VRage.ByteStream stream, byte[] bytes) {
             stream.Write(bytes, 0, bytes.Length);
@@ -74,22 +134,16 @@ namespace SEGarden.Extensions {
         }
 
         public static void addDouble(this VRage.ByteStream stream, double v) {
-            // I'm not entirely sure how to do this in a lossless manner
-            // We can't shift bytes on longs in C#
-            // And obviously we can't just use byte converter
-            // This seems to me like it would maintain enough precision to be workable
-
-            double intPart = Math.Truncate(v);
-            double fracPart = v - intPart;
-
-            stream.addLong((long)intPart);
-            stream.addLong((long)fracPart);
+            var union = new DoubleByteUnion();
+            union.Double = v;
+            byte[] bytes = union.Bytes;
+            stream.Write(bytes, 0, bytes.Length);
         }
 
         public static double getDouble(this VRage.ByteStream stream) {
-            double intPart = (double)stream.getLong();
-            long fracPart = stream.getLong();
-            return intPart + (double)(1 / fracPart);
+            var union = new DoubleByteUnion();
+            union.Bytes = stream.getByteArray(8);
+            return union.Double;
         }
 
         public static void addString(this VRage.ByteStream stream, string s) {
@@ -153,6 +207,16 @@ namespace SEGarden.Extensions {
                 L.Add(stream.getLong());
 
             return L;
+        }
+
+        public static void addVector3D(this VRage.ByteStream stream, Vector3D v) {
+            v.AddToByteStream(stream);
+        }
+
+        public static Vector3D getVector3D(this VRage.ByteStream stream) {
+            Vector3D v = new Vector3D();
+            v.RemoveFromByteStream(stream);
+            return v;
         }
 
     }

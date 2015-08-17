@@ -1,4 +1,4 @@
-﻿//using System;
+﻿using System;
 //using System.Collections.Generic;
 
 using Sandbox.Common;
@@ -97,7 +97,10 @@ namespace SEGarden.Logic {
 
             if (RunOn == RunLocation.Any || RunOn == RunningOn) {
                 Log.Trace("Initializing as " + RunningOn, "TryInit");
-                Initialize();
+                try { Initialize(); }
+                catch (Exception e) {
+                    Log.Error("Error initializing component: " + e, "TryInit");
+                }
                 Status = RunStatus.Initialized;
             } else {
                 Log.Trace("Skipping component, running as " + RunningOn +
@@ -113,7 +116,10 @@ namespace SEGarden.Logic {
 
         private void TerminateIfRunning() {
             if (Status != RunStatus.Terminated) {
-                Terminate();
+                try { Terminate(); }
+                catch (Exception e) {
+                    Log.Error("Error initializing component: " + e, "Terminate");
+                }
                 Log.Trace("Marking terminated", "Terminate");
                 Status = RunStatus.Terminated;
             }

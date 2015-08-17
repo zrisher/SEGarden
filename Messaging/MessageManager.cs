@@ -66,12 +66,15 @@ namespace SEGarden.Messaging {
         }
 
         public void AddHandler(ushort messageId, MessageHandlerBase handler) {
+            Log.Trace("Adding handler for " + messageId, "AddHandler");
             switch (Status) {
                 case (RunStatus.Initialized):
                     RegisterHandler(messageId, handler);
+                    Log.Trace("Registered", "AddHandler");
                     break;
                 case (RunStatus.NotInitialized):
                     QueueHandler(messageId, handler);
+                    Log.Trace("Queued", "AddHandler");
                     break;
                 case (RunStatus.Terminated):
                     Log.Error("Terminated, can't add handler for MessageId " + messageId, "AddHandler");

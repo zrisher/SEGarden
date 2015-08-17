@@ -59,15 +59,52 @@ namespace SEGarden.Files {
         }
         */
 
-        public void Overwrite(String output, String fileName) {
-            if (output == null || fileName == null) return;
-            if (!Ready) return;
-            DeleteFile(fileName);
+        private bool CanWriteStringToFile(String output, String fileName) {
+
+            if (!Ready) {
+                Log.Error("Filemanager not initialized", "CanWriteStringToFile");
+                return false;
+            }
+
+            if (fileName == null || fileName.Length < 1) {
+                Log.Error("Null or empty filename", "CanWriteStringToFile");
+                return false;
+            }
+
+            // Note: SE silently fails on these
+            int firstIllegalChar = fileName.IndexOfAny(Path.GetInvalidFileNameChars());
+            if (firstIllegalChar >= 0) {
+                Log.Error("Illegal filename character at position " + firstIllegalChar, "CanWriteStringToFile");
+                return false;
+            }
+
+            if (output == null || output.Length < 1) {
+                Log.Warning("Null or empty output", "CanWriteStringToFile");
+                return false;
+            }
+
             FileHandlerBase handler = getHandler(fileName);
-            if (handler != null) handler.Write(output);
+            if (handler == null) {
+                Log.Error("Error retrieving handler", "CanWriteStringToFile");
+                return false;
+            }
+
+            return true;
+        }
+
+        public void Overwrite(String output, String fileName) {
+            Log.Trace(String.Format("Overwrite file \"{0}\" with string of length {1}",
+                fileName, output.Length), "Overwrite");
+
+            if (!CanWriteStringToFile(output, fileName)) return;
+
+            DeleteFile(fileName);
+            getHandler(fileName).Write(output);
         }
 
         public void Read<T>(String fileName, ref T result) {
+            Log.Trace(String.Format("Read file \"{0}\"", fileName), "Read");
+
             if (fileName == null) return;
             if (!Ready) return;
             if (!Exists(fileName)) return;
