@@ -15,8 +15,8 @@ namespace SEGarden.Chat.Commands {
         //private Notification UnknownChildNotice;
 
         public Tree(String word, String shortInfo, String longInfo, int security = 0,
-            List<Node> children = null)
-            : base(word, shortInfo, longInfo, security) {
+            List<Node> children = null, String alias = null)
+            : base(word, shortInfo, longInfo, security, alias) {
 
             Children = new List<Node>();
             if (children != null)

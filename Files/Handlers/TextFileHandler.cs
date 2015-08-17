@@ -38,6 +38,7 @@ namespace SEGarden.Files.Handlers {
             }
 
             TextWriter.Write(output);
+            TextWriter.Flush();
         }
 
         public override void Read<T>(ref T result) {

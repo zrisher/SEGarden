@@ -27,6 +27,7 @@ namespace SEGarden.Chat.Commands {
             };
 
         public String Word { get; private set; }
+        public String Alias { get; private set; }
         public String ShortInfo { get; private set; }
         public String LongInfo { get; private set; }
         public String FullCommand { get; private set; }
@@ -58,9 +59,11 @@ namespace SEGarden.Chat.Commands {
             String shortInfo = "",
             String longInfo = "",
             int security = 0,
+            String alias = null,
             String domainTitle = "Chat Commands") {
 
             Word = word;
+            Alias = alias;
             ShortInfo = shortInfo;
             LongInfo = longInfo;
             Security = security;
@@ -68,7 +71,9 @@ namespace SEGarden.Chat.Commands {
         }
 
         public bool Matches(String word) {
-            return word == Word;
+            if (word == Word) return true;
+            if (Alias != null && word == Alias) return true;
+            return false;
         }
 
         public abstract void Refresh(int security);
