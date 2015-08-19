@@ -112,6 +112,46 @@ namespace SEGarden.Files {
             if (handler != null) handler.Read<T>(ref result);
         }
 
+        public T ReadXML<T>(String fileName) {
+            if (!Exists(fileName)) {
+                Log.Error("No file found", "ReadXML");
+                return default(T);
+            }
+
+            String serialized = "";
+            Read<String>(fileName, ref serialized);
+            if (serialized == null || serialized.Length < 1) {
+                Log.Error("Existing file blank", "ReadXML");
+                return default(T);
+            }
+
+            return MyAPIGateway.Utilities.SerializeFromXML<T>(serialized);
+        }
+
+        public bool WriteXML<T>(String fileName, T serializable) {
+            if (serializable == null) {
+                Log.Error("Null serializable object.", "WriteXML");
+                return false;
+            }
+
+            if (fileName == null || fileName == "") {
+                Log.Error("No filename supplied.", "SaveGrids");
+                return false;
+            }
+
+            Overwrite(
+                MyAPIGateway.Utilities.SerializeToXML<T>(serializable),
+                fileName
+            );
+
+            if (!Exists(fileName)) {
+                Log.Error("Failed writing to file.", "SaveGrids");
+                return false;
+            }
+
+            return true;
+        }
+
         public bool Exists(String fileName) {
             if (fileName == null) return false;
             if (!Ready) return false;
