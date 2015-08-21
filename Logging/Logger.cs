@@ -151,7 +151,7 @@ namespace SEGarden.Logging
         /// <param name="level">severity level</param>
         public void Log(String message, String methodName, Severity.Level level = Severity.Level.Trace)
 		{
-            //if (GardenGateway.Files == null) return;
+            if (GardenGateway.Files == null) return;
  
 			if (level > Level) return;
             

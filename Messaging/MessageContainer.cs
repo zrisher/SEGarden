@@ -13,7 +13,7 @@ using SEGarden.Logging;
 using SEGarden.Extensions;
 
 using SEGarden.Messaging;
-using SEGarden.Logic.Common;
+using SEGarden.Logic;
 
 namespace SEGarden.Messaging {
 	

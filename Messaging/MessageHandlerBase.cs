@@ -13,7 +13,7 @@ using Interfaces = Sandbox.ModAPI.Interfaces;
 using InGame = Sandbox.ModAPI.Ingame;
 
 //using SEGarden.Core;
-using SEGarden.Logic.Common;
+using SEGarden.Logic;
 using SEGarden.Logging;
 
 namespace SEGarden.Messaging {

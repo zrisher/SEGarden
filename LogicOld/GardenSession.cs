@@ -9,7 +9,6 @@ using Sandbox.ModAPI;
 //using VRage.ModAPI;
 //using VRage.ObjectBuilders;
 
-using SEGarden.Logic.Common;
 using SEGarden.Logging;
 
 namespace SEGarden.Logic {
@@ -101,7 +100,7 @@ namespace SEGarden.Logic {
                 catch (Exception e) {
                     Log.Error("Error initializing component: " + e, "TryInit");
                 }
-                Status = RunStatus.Initialized;
+                Status = RunStatus.Running;
             } else {
                 Log.Trace("Skipping component, running as " + RunningOn +
                     " but registered for " + RunOn, "TryInit");

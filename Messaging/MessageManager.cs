@@ -16,7 +16,7 @@ using InGame = Sandbox.ModAPI.Ingame;
 
 using SEGarden.Logging;
 
-using SEGarden.Logic.Common;
+using SEGarden.Logic;
 
 namespace SEGarden.Messaging {
 
@@ -37,10 +37,10 @@ namespace SEGarden.Messaging {
             switch (Status) {
                 case RunStatus.NotInitialized:
                     Log.Trace("Initializing Message Manager", "Initialize");
-                    Status = RunStatus.Initialized;
+                    Status = RunStatus.Running;
                     RegisterHandlersFromQueue();
                     break;
-                case RunStatus.Initialized:
+                case RunStatus.Running:
                     Log.Warning("Already initialized", "Initialize");
                     break;
                 case RunStatus.Terminated:
@@ -51,7 +51,7 @@ namespace SEGarden.Messaging {
 
         public virtual void Terminate() {
             switch (Status) {
-                case RunStatus.Initialized:
+                case RunStatus.Running:
                     Log.Trace("Terminating Message Manager", "Terminate");
                     UnregisterHandlers();
                     Status = RunStatus.Terminated;
@@ -68,7 +68,7 @@ namespace SEGarden.Messaging {
         public void AddHandler(ushort messageId, MessageHandlerBase handler) {
             Log.Trace("Adding handler for " + messageId, "AddHandler");
             switch (Status) {
-                case (RunStatus.Initialized):
+                case (RunStatus.Running):
                     RegisterHandler(messageId, handler);
                     break;
                 case (RunStatus.NotInitialized):

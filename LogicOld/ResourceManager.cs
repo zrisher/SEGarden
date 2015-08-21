@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using SEGarden.Logging;
-using SEGarden.Logic.Common;
 
 namespace SEGarden.Logic {
     abstract class ResourceManager {
@@ -18,9 +17,9 @@ namespace SEGarden.Logic {
                 case RunStatus.NotInitialized:
                     Log.Trace("Initializing", "Initialize");
                     InitializeInternal();
-                    Status = RunStatus.Initialized;
+                    Status = RunStatus.Running;
                     break;
-                case RunStatus.Initialized:
+                case RunStatus.Running:
                     Log.Warning("Already initialized", "Initialize");
                     break;
                 case RunStatus.Terminated:
@@ -33,7 +32,7 @@ namespace SEGarden.Logic {
 
         public virtual void Terminate() {
             switch (Status) {
-                case RunStatus.Initialized:
+                case RunStatus.Running:
                     Log.Trace("Terminating", "Terminate");
                     TerminateInternal();
                     Status = RunStatus.Terminated;
