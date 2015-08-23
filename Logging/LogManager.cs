@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SEGarden.Logging {
-    class LogManager : SEGarden.Logic.ResourceManager {
+using SEGarden.Logic;
 
-        protected override void InitializeInternal() {
+namespace SEGarden.Logging {
+    class LogManager : SessionComponent {
+
+        public override void Initialize() {
             //throw new NotImplementedException();
         }
 
-        protected override void TerminateInternal() {
+        public override void Terminate() {
             //throw new NotImplementedException();
         }
 

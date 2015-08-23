@@ -66,6 +66,9 @@ namespace SEGarden.Logic {
         private static LockedQueue<Action> UpdateActions =
             new LockedQueue<Action>(8);
 
+        // Definitely looking for a better way to do this
+        private static bool SEGardenAdded = false;
+
         #endregion
         #region Instance Fields
 
@@ -138,6 +141,7 @@ namespace SEGarden.Logic {
             });
         }
 
+
         // Helper for those who prefer to handle the creation logic directly
         /*
         public static void RegisterInstantiatedEntityComponent(
@@ -172,10 +176,18 @@ namespace SEGarden.Logic {
                 Instance.RegisterEntityComponentConstructorInternal(
                     fullConstructor, entityType, targetLocation);
             });
+         * 
+         public static void RegisterUpdate(uint frequency, Action update, 
+            SessionComponent component) 
+        {
+            UpdateActions.Enqueue(() => {
+                Instance.RegisterUpdateForComponent(frequency, update, component);
+            });
+        }
         }
         */
 
-        public static void RegisterEntityComponentConstructor(
+        public static void RegisterEntityComponent(
             Func<IMyEntity, EntityComponent> constructor,
             MyObjectBuilderType entityType,
             RunLocation targetLocation = RunLocation.Any,
@@ -232,15 +244,6 @@ namespace SEGarden.Logic {
     
         }
 
-
-        public static void RegisterUpdate(uint frequency, Action update, 
-            SessionComponent component) 
-        {
-            UpdateActions.Enqueue(() => {
-                Instance.RegisterUpdateForComponent(frequency, update, component);
-            });
-        }
-
         #endregion
         #region Component Registration
 
@@ -257,8 +260,10 @@ namespace SEGarden.Logic {
             RunLocation targetLocation = RunLocation.Any,
             bool terminateOnError = false) 
         {
-            if (ShouldRunForRegistered(targetLocation))
+            if (ShouldRunForRegistered(targetLocation)) {
                 InitializeComponent(component, terminateOnError);
+                RegisteredComponents.Add(component);
+            }
         }
 
         private void RegisterEntityComponentConstructorInternal(
@@ -299,25 +304,25 @@ namespace SEGarden.Logic {
             if (c.Status == RunStatus.NotInitialized) {
                 
                 try {
-                    Log.Trace("Initializing component", "InitializeComponent");
+                    Log.Trace("Initializing component " + c.Name, "InitializeComponent");
                     c.Initialize();
                     Log.Trace("Registering for updates", "InitializeComponent");
                     RegisterUpdatesForComponent(c, terminateOnError);
                     c.Status = RunStatus.Running;
                 }
                 catch (Exception e) {
-                    Log.Error("Error Initializing component: " + e, "InitializeComponent");
+                    Log.Error("Error Initializing component " + c.Name + "  : " + e, "InitializeComponent");
                     c.Status = RunStatus.Terminated;
                 }
             }
             else {
-                Log.Warning("Tried to initialize already initialized", "InitializeComponent");
+                Log.Warning("Tried to initialize already initialized " + c.Name, "InitializeComponent");
             }
         }
 
         private void TerminateComponent(SessionComponent c) {
             if (c.Status == RunStatus.Terminated) {
-                Log.Warning("Tried to terminate already terminated", "TerminateComponent");
+                Log.Warning("Tried to terminate already terminated " + c.Name, "TerminateComponent");
                 return;
             }
 
@@ -325,11 +330,11 @@ namespace SEGarden.Logic {
 
             try { c.Terminate(); }
             catch (Exception e) {
-                Log.Error("Error terminating component: " + e, "TerminateComponent");
+                Log.Error("Error terminating component " + c.Name + " : " + e, "TerminateComponent");
             }
             c.Status = RunStatus.Terminated;
             DeregisterUpdatesForComponent(c);
-            Log.Trace("Finished terminating component", "TerminateComponent");
+            Log.Trace("Finished terminating component " + c.Name, "TerminateComponent");
         }
 
         private void RegisterUpdatesForComponent(
@@ -433,9 +438,6 @@ namespace SEGarden.Logic {
 
         private void Initialize() {
             Log.Trace("Begin Initialize Update Manager", "Initialize");
-            // TODO: Remove this when this is used by GardenGateway
-            if (!GardenGateway.Initialized)
-                return;
 
             if (MyAPIGateway.CubeBuilder == null || 
                 MyAPIGateway.Entities == null || 
@@ -457,8 +459,13 @@ namespace SEGarden.Logic {
             }
 
             MyAPIGateway.Entities.OnEntityAdd += Entities_OnEntityAdd;
+
             Instance = this;
             Status = RunStatus.Running;
+
+            // Register SE Garden on init, before anything else
+            RegisterComponentInternal(new GardenGateway());
+
             Log.Trace("Finished Initializing Update Manager", "Initialize");
         }
 
@@ -534,7 +541,9 @@ namespace SEGarden.Logic {
             }
 
             Log.Trace("Begin Terminate Update Manager", "Terminate");
-            foreach (SessionComponent c in RegisteredComponents) {
+            // First initialized = last terminated, this helps keep GardenGateway
+            // at the end so we have logging until the very last minute.
+            foreach (SessionComponent c in Enumerable.Reverse(RegisteredComponents)) {
                 TerminateComponent(c);
             }
 
@@ -545,7 +554,6 @@ namespace SEGarden.Logic {
         }
 
         #endregion
-
 
 
         /* At some point I'd like to let people just pass us types instead of constructors

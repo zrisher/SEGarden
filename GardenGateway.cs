@@ -36,26 +36,26 @@ namespace SEGarden {
     /// IMPORTANT: Files needs to be constructed first, initialized first, and 
     /// terminated last, because all logging depends on it.
     /// </remarks>
-    [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.BeforeSimulation)]
-    class GardenGateway : GardenSession {
-
-        public GardenGateway() : base(RunLocation.Any, false) { }
+    class GardenGateway : SessionComponent {
 
         private static Logger Log = new Logger("SEGarden.GardenGateway");
 
         public static FileManager Files { get; private set; }
         public static ChatManager Commands { get; private set; }
         public static MessageManager Messages { get; private set; }
-        public static bool Initialized { get; private set; }
+
         public static RunLocation RunningOn { get; private set; }
 
         /// <summary>
         /// This only needs to be called from ComponentManager
         /// </summary>
-        protected override void Initialize() {
+        public override void Initialize() {
+            RunningOn = CurrentLocation;
+
             Files = new FileManager(); 
             Files.Initialize();  // logging depends on this
-            Log.Info("Starting SE Garden v" + ModData.Version, "");
+
+            Log.Info("Starting SE Garden v" + ModInfo.Version, "");
 
             Commands = new ChatManager();
             Commands.Initialize();
@@ -63,8 +63,6 @@ namespace SEGarden {
             Messages = new MessageManager();
             Messages.Initialize();
 
-            RunningOn = RunningOn;
-            Initialized = true;
             base.Initialize();
         }
 
@@ -72,12 +70,11 @@ namespace SEGarden {
         /// <summary>
         /// This only needs to be called from ComponentManager
         /// </summary>
-        protected override void Terminate() {
+        public override void Terminate() {
             Log.Info("Stopping SE Garden.", "");
             Commands.Terminate();
             Messages.Terminate();
             Files.Terminate();  // logging depends on this
-            Initialized = false;
             base.Terminate();
         }
 

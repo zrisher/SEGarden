@@ -15,6 +15,9 @@ namespace SEGarden.Logic {
     /// </summary>
     public abstract class SessionComponent {
 
+        // Useful for logging
+        public String Name { get { return ""; } }
+
         // The update manager will set these and provide them for reference here
         // It will check them when Initializing and Terminating
         public RunStatus Status { get; set; }

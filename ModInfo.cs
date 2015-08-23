@@ -5,9 +5,9 @@ using System.Text;
 
 namespace SEGarden {
 
-    class ModData {
+    class ModInfo {
 
-        public const String Version = "0.7";
+        public const String Version = "0.8.1";
 
     }
 }
