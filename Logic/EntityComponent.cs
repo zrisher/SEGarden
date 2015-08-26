@@ -17,7 +17,12 @@ namespace SEGarden.Logic {
 
         public EntityComponent(IMyEntity entity) : base() {
             Entity = entity;
+            EntityId = entity.EntityId;
         }
+
+        public long EntityId { get; private set; }
+        // This can change over time, no events, so get it instead of storing
+        public string DisplayName { get { return Entity.DisplayName;  } }
 
         public override void Initialize() {
             Log.Trace("Initialize entity component abstract", "Initialize");

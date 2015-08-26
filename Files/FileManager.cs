@@ -20,6 +20,9 @@ namespace SEGarden.Files {
     /// if file operations are attempted from outside of this mod during its
     /// update frames, bad things could happen. We don't expect calls to ModAPI 
     /// or file writing to be thread safe if dont outside of these controls.
+    /// 
+    /// Be VERY careful adding logging in here - logging relies on some of this,
+    /// and calling it within will cause an infinite loop.
     /// </summary>
     class FileManager {
   
@@ -105,14 +108,14 @@ namespace SEGarden.Files {
         public void Read<T>(String fileName, ref T result) {
             Log.Trace(String.Format("Read file \"{0}\"", fileName), "Read");
 
-            if (fileName == null) return;
-            if (!Ready) return;
             if (!Exists(fileName)) return;
             FileHandlerBase handler = getHandler(fileName);
             if (handler != null) handler.Read<T>(ref result);
         }
 
         public T ReadXML<T>(String fileName) {
+            Log.Trace("ReadXML from " + fileName, "ReadXML");
+
             if (!Exists(fileName)) {
                 Log.Error("No file found", "ReadXML");
                 return default(T);
@@ -153,10 +156,21 @@ namespace SEGarden.Files {
         }
 
         public bool Exists(String fileName) {
-            if (fileName == null) return false;
-            if (!Ready) return false;
-            return MyAPIGateway.Utilities.FileExistsInLocalStorage(
-                fileName, TypeForFolder);
+            if (fileName == null) {
+                Log.Error("Null filename.", "Exists");
+                return false;
+            }
+            if (!Ready) {
+                Log.Error("Manager not ready.", "Exists");
+                return false;
+            }
+            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(fileName, TypeForFolder)) {
+                Log.Trace("File does not exist: " + fileName, "Exists");
+                return false;
+            }
+
+            Log.Trace("File exists: " + fileName, "Exists");
+            return true;
         }
 
         /// <summary>
@@ -186,6 +200,9 @@ namespace SEGarden.Files {
         /// <summary>
         /// Get the handler dedicated to filename
         /// </summary>
+        /// <remarks>
+        /// DON'T PUT LOGGING IN HERE!
+        /// </remarks>
         private FileHandlerBase getHandler(String filename) {
             if (filename == null) return null;
 

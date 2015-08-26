@@ -18,10 +18,7 @@ namespace SEGarden.Logging
 	/// </summary>
 	/// <remarks>
     /// Pattern: [%time][%thread][%level][%class][%instance][%method] - %Message
-    /// 
-    /// This must be a MySessionComponentBase in order to load before the world does
 	/// </remarks>
-	//[Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.NoUpdate)]
 	public class Logger { //: Sandbox.Common.MySessionComponentBase {
 
         #region Static

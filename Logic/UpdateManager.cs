@@ -261,6 +261,8 @@ namespace SEGarden.Logic {
             bool terminateOnError = false) 
         {
             if (ShouldRunForRegistered(targetLocation)) {
+                Log.Trace("Registering component " + component.ComponentName, 
+                    "RegisterComponentInternal");
                 InitializeComponent(component, terminateOnError);
                 RegisteredComponents.Add(component);
             }
@@ -273,6 +275,9 @@ namespace SEGarden.Logic {
         {
             if (!ShouldRunForRegistered(targetLocation))
                 return;
+
+            Log.Trace("Registering entity component constructor for " + entityType, 
+                "RegisterEntityComponentConstructorInternal");
 
             GetEntityComponentConstructors(entityType).Add(constructor);
 
@@ -289,6 +294,8 @@ namespace SEGarden.Logic {
                 entity.GetObjectBuilder().GetType());
 
             foreach (Action<IMyEntity> constructor in registerActions) {
+                Log.Trace("Running constructor on entity " + entity.EntityId,
+                    "RegisterEntityComponentsForAdded");
                 try { constructor.Invoke(entity); }
                 catch (Exception e) {
                     Log.Error("Exception in entity constructor: " + e,
@@ -304,25 +311,25 @@ namespace SEGarden.Logic {
             if (c.Status == RunStatus.NotInitialized) {
                 
                 try {
-                    Log.Trace("Initializing component " + c.Name, "InitializeComponent");
+                    Log.Trace("Initializing component " + c.ComponentName, "InitializeComponent");
                     c.Initialize();
                     Log.Trace("Registering for updates", "InitializeComponent");
                     RegisterUpdatesForComponent(c, terminateOnError);
                     c.Status = RunStatus.Running;
                 }
                 catch (Exception e) {
-                    Log.Error("Error Initializing component " + c.Name + "  : " + e, "InitializeComponent");
+                    Log.Error("Error Initializing component " + c.ComponentName + "  : " + e, "InitializeComponent");
                     c.Status = RunStatus.Terminated;
                 }
             }
             else {
-                Log.Warning("Tried to initialize already initialized " + c.Name, "InitializeComponent");
+                Log.Warning("Tried to initialize already initialized " + c.ComponentName, "InitializeComponent");
             }
         }
 
         private void TerminateComponent(SessionComponent c) {
             if (c.Status == RunStatus.Terminated) {
-                Log.Warning("Tried to terminate already terminated " + c.Name, "TerminateComponent");
+                Log.Warning("Tried to terminate already terminated " + c.ComponentName, "TerminateComponent");
                 return;
             }
 
@@ -330,11 +337,11 @@ namespace SEGarden.Logic {
 
             try { c.Terminate(); }
             catch (Exception e) {
-                Log.Error("Error terminating component " + c.Name + " : " + e, "TerminateComponent");
+                Log.Error("Error terminating component " + c.ComponentName + " : " + e, "TerminateComponent");
             }
             c.Status = RunStatus.Terminated;
             DeregisterUpdatesForComponent(c);
-            Log.Trace("Finished terminating component " + c.Name, "TerminateComponent");
+            Log.Trace("Finished terminating component " + c.ComponentName, "TerminateComponent");
         }
 
         private void RegisterUpdatesForComponent(
