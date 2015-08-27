@@ -87,7 +87,7 @@ namespace SEGarden.Messaging {
             SourceType = SEGarden.GardenGateway.RunningOn;
             //Log.Trace("SourceType : " + SourceType, "Send");
 
-            if (SourceType == RunLocation.Client)
+            if (SourceType == RunLocation.Client || SourceType == RunLocation.Singleplayer)
                 SourceId = (ulong)MyAPIGateway.Session.Player.SteamUserId;
             else SourceId = 0;
 

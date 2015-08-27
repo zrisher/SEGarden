@@ -3,8 +3,10 @@
 //using System.Linq;
 //using System.Text;
 
+using Sandbox.ModAPI;
 using VRage.ModAPI;
 
+using SEGarden.Extensions;
 using SEGarden.Logging;
 
 namespace SEGarden.Logic {
@@ -20,7 +22,12 @@ namespace SEGarden.Logic {
             EntityId = entity.EntityId;
         }
 
-        public long EntityId { get; private set; }
+        public EntityComponent(VRage.ByteStream stream) : base() {
+            EntityId = stream.getLong();
+            Entity = MyAPIGateway.Entities.GetEntityById(EntityId);
+        }
+
+        public long EntityId { get; protected set; }
         // This can change over time, no events, so get it instead of storing
         public string DisplayName { get { return Entity.DisplayName;  } }
 
@@ -39,6 +46,10 @@ namespace SEGarden.Logic {
             Log.Trace("Terminate entity component abstract", "Terminate");
             Entity.OnMarkForClose -= OnClose;
             base.Terminate();
+        }
+
+        public virtual void AddToByteStream(VRage.ByteStream stream) {
+            stream.addLong(EntityId);
         }
 
     }
