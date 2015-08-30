@@ -196,6 +196,7 @@ namespace SEGarden.Logic {
             bool allowTransparent = false) 
         {
 
+
             // This will be run during update once an entity with the right 
             // entity Type has been added, if we're running on  targetLocation
             // This gets run from within an UpdateAction, so don't enqueue
@@ -219,7 +220,7 @@ namespace SEGarden.Logic {
 
                 // Run constructor
                 EntityComponent c;
-                Log.Trace("Running constructor for entity " + e.EntityId, "EntityComponentCtr");
+                Log.Trace("Inside constructor wrapper, invoking " + e.EntityId, "EntityComponentCtr");
                 try { c = constructor.Invoke(e); }
                 catch (Exception e2) { 
                     Log.Error("Error invoking constructor: " + e2, "EntityComponentCtr");
@@ -276,31 +277,53 @@ namespace SEGarden.Logic {
             if (!ShouldRunForRegistered(targetLocation))
                 return;
 
-            Log.Trace("Registering entity component constructor for " + entityType, 
-                "RegisterEntityComponentConstructorInternal");
-
-            GetEntityComponentConstructors(entityType).Add(constructor);
+            RememberEntityComponentConstructor(entityType, constructor);
 
             // init entity components with existing entities
-            // TODO: it would be nice to do this once for multiple constructor adds
+            Log.Trace("Running newly saved constructor on existing entities.", 
+                "RememberEntityComponentConstructor");
             HashSet<IMyEntity> allEntities = new HashSet<IMyEntity>();
             MyAPIGateway.Entities.GetEntities(allEntities);
-            foreach (IMyEntity entity in allEntities)
-                RegisterEntityComponentsForAdded(entity);
+            List<IMyEntity> targetEntities = allEntities.Where(
+                (e) => e.GetObjectBuilder().GetType() == entityType).
+                ToList();
+
+            foreach (IMyEntity entity in targetEntities)
+                RunEntityComponentConstructorOnEntity(constructor, entity);
         }
 
-        private void RegisterEntityComponentsForAdded(IMyEntity entity) {
-            List<Action<IMyEntity>> registerActions = GetEntityComponentConstructors(
-                entity.GetObjectBuilder().GetType());
+        private void RememberEntityComponentConstructor(
+            MyObjectBuilderType entityType, Action<IMyEntity> constructor) 
+        {
+            Log.Trace("Saving entity component constructor for " + entityType + 
+                " to dictionary.", "RememberEntityComponentConstructor");
+
+            GetEntityComponentConstructors(entityType).Add(constructor);
+        }
+
+        private void RunAllEntityComponentConstructorsOnAdded(IMyEntity entity) {
+            Type entityBuilderType = entity.GetObjectBuilder().GetType();
+
+            List<Action<IMyEntity>> registerActions = 
+                GetEntityComponentConstructors(entityBuilderType);
+
+            Log.Trace("Running " + registerActions.Count + " saved constructors " +
+                " for entity " + entity.EntityId + " of type " + entityBuilderType,
+                "RunAllEntityComponentConstructorsOnAdded");
 
             foreach (Action<IMyEntity> constructor in registerActions) {
-                Log.Trace("Running constructor on entity " + entity.EntityId,
-                    "RegisterEntityComponentsForAdded");
-                try { constructor.Invoke(entity); }
-                catch (Exception e) {
-                    Log.Error("Exception in entity constructor: " + e,
-                        "RegisterEntityComponentsForAdded");
-                }
+                RunEntityComponentConstructorOnEntity(constructor, entity);
+            }
+        }
+
+        private void RunEntityComponentConstructorOnEntity(Action<IMyEntity> constructor, IMyEntity entity) {
+            Log.Trace("Running constructor on entity " + entity.EntityId,
+                "RunEntityComponentConstructorOnAdded");
+
+            try { constructor.Invoke(entity); }
+            catch (Exception e) {
+                Log.Error("Exception in entity constructor: " + e,
+                    "RunEntityComponentConstructorOnAdded");
             }
         }
 
@@ -313,7 +336,6 @@ namespace SEGarden.Logic {
                 try {
                     Log.Trace("Initializing component " + c.ComponentName, "InitializeComponent");
                     c.Initialize();
-                    Log.Trace("Registering for updates", "InitializeComponent");
                     RegisterUpdatesForComponent(c, terminateOnError);
                     c.Status = RunStatus.Running;
                 }
@@ -349,7 +371,7 @@ namespace SEGarden.Logic {
             bool terminateOnError = false) 
         {
             //Log.Trace("Start RegisterUpdatesForComponent", "RegisterUpdatesForComponent");
-
+            Log.Trace("Registering component " + c.ComponentName + " for updates.", "RegisterUpdatesForComponent");
             Dictionary<uint, Action> componentUpdates;
 
             try {componentUpdates = c.UpdateActions; }
@@ -375,7 +397,7 @@ namespace SEGarden.Logic {
             //Log.Trace("Start RegisterUpdateForComponent", "RegisterUpdateForComponent");
             if (update == null) return;
 
-            Log.Trace("Registering updates for component", "RegisterUpdateForComponent");
+            Log.Trace("Registering update action for component " + c.ComponentName + " with frequency " + frequency, "RegisterUpdateForComponent");
             GetUpdateList(frequency).Add(new ComponentUpdate {
                 UpdateAction = update,
                 Component = c,
@@ -424,8 +446,12 @@ namespace SEGarden.Logic {
 
         private void Entities_OnEntityAdd(IMyEntity entity) {
             Log.Trace("Entity " + entity.EntityId + " added to game", "Entities_OnEntityAdd");
-            if (entity.Save)
-                UpdateActions.Enqueue(() => RegisterEntityComponentsForAdded(entity));
+            if (entity.Save) {
+                UpdateActions.Enqueue(() => {
+                    Log.Trace("Registering entity from OnEntityAdded", "action");
+                    RunAllEntityComponentConstructorsOnAdded(entity);
+                });
+            }
         }
 
         protected override void UnloadData() {

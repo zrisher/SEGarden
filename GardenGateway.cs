@@ -38,6 +38,8 @@ namespace SEGarden {
     /// </remarks>
     class GardenGateway : SessionComponent {
 
+        public override string ComponentName { get { return "GardenGateway"; } }
+
         private static Logger Log = new Logger("SEGarden.GardenGateway");
 
         public static FileManager Files { get; private set; }

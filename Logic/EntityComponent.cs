@@ -1,4 +1,4 @@
-﻿//using System;
+﻿using System;
 //using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
@@ -15,16 +15,21 @@ namespace SEGarden.Logic {
 
         protected IMyEntity Entity;
 
-        private static Logger Log = new Logger("SEGarden.Logic.EntityComponent");
+        protected static Logger Log;
 
         public EntityComponent(IMyEntity entity) : base() {
             Entity = entity;
             EntityId = entity.EntityId;
+            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
+            Log.Trace("Finished EntityComponent ctr", "ctr");
         }
 
         public EntityComponent(VRage.ByteStream stream) : base() {
             EntityId = stream.getLong();
             Entity = MyAPIGateway.Entities.GetEntityById(EntityId);
+            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
+            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
+            Log.Trace("Finished EntityComponent deserialize", "ctr");
         }
 
         public long EntityId { get; protected set; }
@@ -39,7 +44,11 @@ namespace SEGarden.Logic {
 
         private void OnClose(IMyEntity e) {
             Log.Trace("Attached entity is closing", "OnClose");
-            TerminateConditional();
+            try { TerminateConditional(); }
+            catch (Exception ex) {
+                Log.Error("Error terminating on close: " + ex, "OnClose");
+            }
+
         }
 
         public override void Terminate() {

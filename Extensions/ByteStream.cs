@@ -85,6 +85,45 @@ namespace SEGarden.Extensions {
             }
         }
 
+        [StructLayout(LayoutKind.Explicit)]
+        private struct DateTimeByteUnion {
+            [FieldOffset(0)]
+            private byte b0;
+            [FieldOffset(8)]
+            private byte b1;
+            [FieldOffset(16)]
+            private byte b2;
+            [FieldOffset(24)]
+            private byte b3;
+            [FieldOffset(32)]
+            private byte b4;
+            [FieldOffset(40)]
+            private byte b5;
+            [FieldOffset(48)]
+            private byte b6;
+            [FieldOffset(54)]
+            private byte b7;
+
+            [FieldOffset(0)]
+            public DateTime DateTime;
+
+            public byte[] Bytes {
+                get { return new Byte[8] { b0, b1, b2, b3, b4, b5, b6, b7 }; }
+                set {
+                    b0 = value[0]; b1 = value[1]; b2 = value[2]; b3 = value[3];
+                    b4 = value[4]; b5 = value[5]; b6 = value[6]; b7 = value[7];
+                }
+            }
+        }
+
+        public static void addByte(this VRage.ByteStream stream, byte theByte) {
+            stream.WriteByte(theByte);
+        }
+
+        public static byte getByte(this VRage.ByteStream stream) {
+            return stream.ReadByte();
+        }
+
 
         public static void addByteArray(this VRage.ByteStream stream, byte[] bytes) {
             stream.Write(bytes, 0, bytes.Length);
@@ -199,8 +238,11 @@ namespace SEGarden.Extensions {
 
             // Read length
             ushort len = stream.getUShort();
+
+            /*
             if (len == 0)
                 return null;
+            */
 
             // Read data
             for (ushort i = 0; i < len; ++i)
@@ -217,6 +259,19 @@ namespace SEGarden.Extensions {
             Vector3D v = new Vector3D();
             v.RemoveFromByteStream(stream);
             return v;
+        }
+
+        public static void addDateTime(this VRage.ByteStream stream, DateTime v) {
+            var union = new DateTimeByteUnion();
+            union.DateTime = v;
+            byte[] bytes = union.Bytes;
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static DateTime getDateTime(this VRage.ByteStream stream) {
+            var union = new DateTimeByteUnion();
+            union.Bytes = stream.getByteArray(8);
+            return union.DateTime;
         }
 
     }

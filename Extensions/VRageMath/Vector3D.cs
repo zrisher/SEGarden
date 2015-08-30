@@ -34,5 +34,12 @@ namespace SEGarden.Extensions.VRageMath {
             vector.Y = stream.getDouble();
             vector.Z = stream.getDouble();
         }
+
+        public static String ToRoundedString(this Vector3D vector) {
+            return System.Math.Truncate(vector.X) + ", " +
+                System.Math.Truncate(vector.Y) + ", " +
+                System.Math.Truncate(vector.Z);
+        }
+
     }
 }

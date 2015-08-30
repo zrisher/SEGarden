@@ -38,10 +38,11 @@ namespace SEGarden.Logging
         #region Instance Fields
 
 		// Log descriptors, functions take precedence over strings
-        private Func<String> InstanceNameFunc;
-		private String ClassName, InstanceName, ThreadName;
+        // We allow these to change over time, useful for class inheritance
+        public Func<String> InstanceNameFunc;
+        public String ClassName, InstanceName;
 
-        private String FileName;
+        private String FileName, ThreadName;
         private StringBuilder StringCache = new StringBuilder();
 
         #endregion
