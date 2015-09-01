@@ -104,8 +104,9 @@ namespace SEGarden.Chat {
                         resultNotification.Raise();
                     }
                     else {
-                        Log.Warning("Null command invoke result for " +
-                            commandTree.Word, "handleChatInput");
+                        // Feel like this is expected from some users
+                        //Log.Warning("Null command invoke result for " +
+                        //    commandTree.Word, "handleChatInput");
                     }     
 
                 }

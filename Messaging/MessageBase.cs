@@ -69,6 +69,10 @@ namespace SEGarden.Messaging {
             Send(steamId, MessageDestinationType.Player);
         }
 
+        public void SendToAll() {
+            Send(0, MessageDestinationType.All);
+        }
+
         public void SendToFaction(long factionId) {
             IMyFaction faction = MyAPIGateway.Session.Factions.
                 TryGetFactionById(factionId);

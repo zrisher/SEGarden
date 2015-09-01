@@ -35,14 +35,14 @@ namespace SEGarden.Extensions {
     public static class ByteConverterExtension {
 
         [StructLayout(LayoutKind.Explicit)]
-        private struct FloatByteUnion {
+        private struct FourByteUnion {
             [FieldOffset(0)]
             private byte b0;
-            [FieldOffset(8)]
+            [FieldOffset(1)]
             private byte b1;
-            [FieldOffset(16)]
+            [FieldOffset(2)]
             private byte b2;
-            [FieldOffset(24)]
+            [FieldOffset(3)]
             private byte b3;
 
             [FieldOffset(0)]
@@ -55,26 +55,29 @@ namespace SEGarden.Extensions {
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        private struct DoubleByteUnion {
+        private struct EightByteUnion {
             [FieldOffset(0)]
             private byte b0;
-            [FieldOffset(8)]
+            [FieldOffset(1)]
             private byte b1;
-            [FieldOffset(16)]
+            [FieldOffset(2)]
             private byte b2;
-            [FieldOffset(24)]
+            [FieldOffset(3)]
             private byte b3;
-            [FieldOffset(32)]
+            [FieldOffset(4)]
             private byte b4;
-            [FieldOffset(40)]
+            [FieldOffset(5)]
             private byte b5;
-            [FieldOffset(48)]
+            [FieldOffset(6)]
             private byte b6;
-            [FieldOffset(54)]
+            [FieldOffset(7)]
             private byte b7;
 
             [FieldOffset(0)]
             public double Double;
+
+            [FieldOffset(0)]
+            public DateTime DateTime;
 
             public byte[] Bytes {
                 get { return new Byte[8] { b0, b1, b2, b3, b4, b5, b6, b7 }; }
@@ -85,36 +88,6 @@ namespace SEGarden.Extensions {
             }
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        private struct DateTimeByteUnion {
-            [FieldOffset(0)]
-            private byte b0;
-            [FieldOffset(8)]
-            private byte b1;
-            [FieldOffset(16)]
-            private byte b2;
-            [FieldOffset(24)]
-            private byte b3;
-            [FieldOffset(32)]
-            private byte b4;
-            [FieldOffset(40)]
-            private byte b5;
-            [FieldOffset(48)]
-            private byte b6;
-            [FieldOffset(54)]
-            private byte b7;
-
-            [FieldOffset(0)]
-            public DateTime DateTime;
-
-            public byte[] Bytes {
-                get { return new Byte[8] { b0, b1, b2, b3, b4, b5, b6, b7 }; }
-                set {
-                    b0 = value[0]; b1 = value[1]; b2 = value[2]; b3 = value[3];
-                    b4 = value[4]; b5 = value[5]; b6 = value[6]; b7 = value[7];
-                }
-            }
-        }
 
         public static void addByte(this VRage.ByteStream stream, byte theByte) {
             stream.WriteByte(theByte);
@@ -173,14 +146,14 @@ namespace SEGarden.Extensions {
         }
 
         public static void addDouble(this VRage.ByteStream stream, double v) {
-            var union = new DoubleByteUnion();
+            var union = new EightByteUnion();
             union.Double = v;
             byte[] bytes = union.Bytes;
             stream.Write(bytes, 0, bytes.Length);
         }
 
         public static double getDouble(this VRage.ByteStream stream) {
-            var union = new DoubleByteUnion();
+            var union = new EightByteUnion();
             union.Bytes = stream.getByteArray(8);
             return union.Double;
         }
@@ -262,14 +235,14 @@ namespace SEGarden.Extensions {
         }
 
         public static void addDateTime(this VRage.ByteStream stream, DateTime v) {
-            var union = new DateTimeByteUnion();
+            var union = new EightByteUnion();
             union.DateTime = v;
             byte[] bytes = union.Bytes;
             stream.Write(bytes, 0, bytes.Length);
         }
 
         public static DateTime getDateTime(this VRage.ByteStream stream) {
-            var union = new DateTimeByteUnion();
+            var union = new EightByteUnion();
             union.Bytes = stream.getByteArray(8);
             return union.DateTime;
         }

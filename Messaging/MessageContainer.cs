@@ -113,6 +113,11 @@ namespace SEGarden.Messaging {
                         MessageDomainId, buffer, DestinationId, Reliable);
                         //Log.Info("Sent message to player " + DestinationId, "SendMessage");
                     break;
+
+                case MessageDestinationType.All:
+                    MyAPIGateway.Multiplayer.SendMessageToOthers(
+                        MessageDomainId, buffer, Reliable);
+                    break;
             }
 
             Log.Info("Sent packet of " + buffer.Length + " bytes", "SendMessage");

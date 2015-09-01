@@ -9,7 +9,8 @@ namespace SEGarden.Messaging {
         None,
         Faction,
         Player,
-        Server
+        Server,
+        All
     }
 
 }
