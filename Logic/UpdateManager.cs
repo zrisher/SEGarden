@@ -220,7 +220,7 @@ namespace SEGarden.Logic {
 
                 // Run constructor
                 EntityComponent c;
-                Log.Trace("Inside constructor wrapper, invoking " + e.EntityId, "EntityComponentCtr");
+                //Log.Trace("Inside constructor wrapper, invoking " + e.EntityId, "EntityComponentCtr");
                 try { c = constructor.Invoke(e); }
                 catch (Exception e2) { 
                     Log.Error("Error invoking constructor: " + e2, "EntityComponentCtr");
@@ -228,7 +228,7 @@ namespace SEGarden.Logic {
                 }
 
                 if (c == null) {
-                    Log.Trace("Return null ctr, aborting ", "EntityComponentCtr");
+                    Log.Warning("Return null ctr, aborting ", "EntityComponentCtr");
                     return;
                 }
 
@@ -262,7 +262,7 @@ namespace SEGarden.Logic {
             bool terminateOnError = false) 
         {
             if (ShouldRunForRegistered(targetLocation)) {
-                Log.Trace("Registering component " + component.ComponentName, 
+                Log.Debug("Registering component " + component.ComponentName, 
                     "RegisterComponentInternal");
                 InitializeComponent(component, terminateOnError);
                 RegisteredComponents.Add(component);
@@ -280,8 +280,8 @@ namespace SEGarden.Logic {
             RememberEntityComponentConstructor(entityType, constructor);
 
             // init entity components with existing entities
-            Log.Trace("Running newly saved constructor on existing entities.", 
-                "RememberEntityComponentConstructor");
+            //Log.Trace("Running newly saved constructor on existing entities.", 
+            //    "RememberEntityComponentConstructor");
             HashSet<IMyEntity> allEntities = new HashSet<IMyEntity>();
             MyAPIGateway.Entities.GetEntities(allEntities);
             List<IMyEntity> targetEntities = allEntities.Where(
@@ -295,8 +295,8 @@ namespace SEGarden.Logic {
         private void RememberEntityComponentConstructor(
             MyObjectBuilderType entityType, Action<IMyEntity> constructor) 
         {
-            Log.Trace("Saving entity component constructor for " + entityType + 
-                " to dictionary.", "RememberEntityComponentConstructor");
+            //Log.Trace("Saving entity component constructor for " + entityType + 
+            //    " to dictionary.", "RememberEntityComponentConstructor");
 
             GetEntityComponentConstructors(entityType).Add(constructor);
         }
@@ -307,9 +307,9 @@ namespace SEGarden.Logic {
             List<Action<IMyEntity>> registerActions = 
                 GetEntityComponentConstructors(entityBuilderType);
 
-            Log.Trace("Running " + registerActions.Count + " saved constructors " +
-                " for entity " + entity.EntityId + " of type " + entityBuilderType,
-                "RunAllEntityComponentConstructorsOnAdded");
+            //Log.Trace("Running " + registerActions.Count + " saved constructors " +
+            //    " for entity " + entity.EntityId + " of type " + entityBuilderType,
+            //    "RunAllEntityComponentConstructorsOnAdded");
 
             foreach (Action<IMyEntity> constructor in registerActions) {
                 RunEntityComponentConstructorOnEntity(constructor, entity);
@@ -317,8 +317,8 @@ namespace SEGarden.Logic {
         }
 
         private void RunEntityComponentConstructorOnEntity(Action<IMyEntity> constructor, IMyEntity entity) {
-            Log.Trace("Running constructor on entity " + entity.EntityId,
-                "RunEntityComponentConstructorOnAdded");
+            //Log.Trace("Running constructor on entity " + entity.EntityId,
+            //    "RunEntityComponentConstructorOnAdded");
 
             try { constructor.Invoke(entity); }
             catch (Exception e) {
@@ -334,7 +334,7 @@ namespace SEGarden.Logic {
             if (c.Status == RunStatus.NotInitialized) {
                 
                 try {
-                    Log.Trace("Initializing component " + c.ComponentName, "InitializeComponent");
+                    Log.Debug("Initializing component " + c.ComponentName, "InitializeComponent");
                     c.Initialize();
                     RegisterUpdatesForComponent(c, terminateOnError);
                     c.Status = RunStatus.Running;
@@ -355,7 +355,7 @@ namespace SEGarden.Logic {
                 return;
             }
 
-            Log.Trace("Terminating component", "TerminateComponent");
+            Log.Debug("Terminating component", "TerminateComponent");
 
             try { c.Terminate(); }
             catch (Exception e) {
@@ -363,7 +363,7 @@ namespace SEGarden.Logic {
             }
             c.Status = RunStatus.Terminated;
             DeregisterUpdatesForComponent(c);
-            Log.Trace("Finished terminating component " + c.ComponentName, "TerminateComponent");
+            //Log.Trace("Finished terminating component " + c.ComponentName, "TerminateComponent");
         }
 
         private void RegisterUpdatesForComponent(
@@ -371,7 +371,7 @@ namespace SEGarden.Logic {
             bool terminateOnError = false) 
         {
             //Log.Trace("Start RegisterUpdatesForComponent", "RegisterUpdatesForComponent");
-            Log.Trace("Registering component " + c.ComponentName + " for updates.", "RegisterUpdatesForComponent");
+            //Log.Trace("Registering component " + c.ComponentName + " for updates.", "RegisterUpdatesForComponent");
             Dictionary<uint, Action> componentUpdates;
 
             try {componentUpdates = c.UpdateActions; }
@@ -397,7 +397,7 @@ namespace SEGarden.Logic {
             //Log.Trace("Start RegisterUpdateForComponent", "RegisterUpdateForComponent");
             if (update == null) return;
 
-            Log.Trace("Registering update action for component " + c.ComponentName + " with frequency " + frequency, "RegisterUpdateForComponent");
+            //Log.Trace("Registering update action for component " + c.ComponentName + " with frequency " + frequency, "RegisterUpdateForComponent");
             GetUpdateList(frequency).Add(new ComponentUpdate {
                 UpdateAction = update,
                 Component = c,
@@ -445,23 +445,23 @@ namespace SEGarden.Logic {
         }
 
         private void Entities_OnEntityAdd(IMyEntity entity) {
-            Log.Trace("Entity " + entity.EntityId + " added to game", "Entities_OnEntityAdd");
+            //Log.Trace("Entity " + entity.EntityId + " added to game", "Entities_OnEntityAdd");
             if (entity.Save) {
                 UpdateActions.Enqueue(() => {
-                    Log.Trace("Registering entity from OnEntityAdded", "action");
+                    //Log.Trace("Registering entity from OnEntityAdded", "action");
                     RunAllEntityComponentConstructorsOnAdded(entity);
                 });
             }
         }
 
         protected override void UnloadData() {
-            Log.Trace("Update Manager unloading data", "UnloadData");
+            //Log.Trace("Update Manager unloading data", "UnloadData");
             base.UnloadData();
             Terminate();
         }
 
         public override void UpdatingStopped() {
-            Log.Trace("Update Manager component stopped", "UpdatingStopped");
+            //Log.Trace("Update Manager component stopped", "UpdatingStopped");
             base.UnloadData();
             Terminate();
         }
@@ -470,7 +470,7 @@ namespace SEGarden.Logic {
         #region Internal Initialize/Update/Terminate
 
         private void Initialize() {
-            Log.Trace("Begin Initialize Update Manager", "Initialize");
+            Log.Debug("Begin Initialize Update Manager", "Initialize");
 
             if (MyAPIGateway.CubeBuilder == null || 
                 MyAPIGateway.Entities == null || 
@@ -499,7 +499,7 @@ namespace SEGarden.Logic {
             // Register SE Garden on init, before anything else
             RegisterComponentInternal(new GardenGateway());
 
-            Log.Trace("Finished Initializing Update Manager", "Initialize");
+            Log.Debug("Finished Initializing Update Manager", "Initialize");
         }
 
         private void Update() {
@@ -508,7 +508,7 @@ namespace SEGarden.Logic {
             // initialize new components at any time. We queue that to do
             // more safely here once we're fully initialized.
             if (UpdateActions.Count > 0) {
-                Log.Trace("Running " + UpdateActions.Count + " update actions", "Update");
+                Log.Debug("Running " + UpdateActions.Count + " update actions", "Update");
                 try {
                     UpdateActions.DequeueAll(action => action.Invoke());
                 }
@@ -523,7 +523,7 @@ namespace SEGarden.Logic {
                     foreach (ComponentUpdate item in kvp.Value) {
 
                         if (item.Component.Status != RunStatus.Running) {
-                            Log.Trace("Found terminated component in update list, " +
+                            Log.Debug("Found terminated component in update list, " +
                                 "removing", "Update");
 
                             if (!ComponentsToDeregister.Contains(item.Component))
@@ -553,7 +553,7 @@ namespace SEGarden.Logic {
                 foreach (SessionComponent c in ComponentsToDeregister)
                     DeregisterUpdatesForComponent(c);
 
-                ComponentsToTerminate.Clear();
+                ComponentsToDeregister.Clear();
             }
 
             // Note this both stops them AND deregisters them
@@ -573,7 +573,7 @@ namespace SEGarden.Logic {
                 return;
             }
 
-            Log.Trace("Begin Terminate Update Manager", "Terminate");
+            Log.Debug("Begin Terminate Update Manager", "Terminate");
             // First initialized = last terminated, this helps keep GardenGateway
             // at the end so we have logging until the very last minute.
             foreach (SessionComponent c in Enumerable.Reverse(RegisteredComponents)) {
@@ -583,7 +583,7 @@ namespace SEGarden.Logic {
             MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityAdd;
 
             Status = RunStatus.Terminated;
-            Log.Trace("Finished Terminating Update Manager", "Terminate");
+            Log.Debug("Finished Terminating Update Manager", "Terminate");
         }
 
         #endregion

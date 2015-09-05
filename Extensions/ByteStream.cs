@@ -34,6 +34,8 @@ namespace SEGarden.Extensions {
     /// </summary>
     public static class ByteConverterExtension {
 
+        private static SEGarden.Logging.Logger Log = new Logging.Logger("ByteConverterExtension");
+
         [StructLayout(LayoutKind.Explicit)]
         private struct FourByteUnion {
             [FieldOffset(0)]
@@ -128,8 +130,11 @@ namespace SEGarden.Extensions {
 
         public static long getLong(this VRage.ByteStream stream) {
             ulong v = 0;
-            for (byte i = 0; i < sizeof(ulong); ++i)
+            for (byte i = 0; i < sizeof(ulong); ++i) {
+                //Log.Trace("Removing one byte from steam at position: " + stream.Position + " / " + stream.Length, "getLong");
                 v |= (ulong)((ulong)(stream.ReadByte()) << (i * 8));
+            }
+
             return (long)v;
         }
 
@@ -195,11 +200,13 @@ namespace SEGarden.Extensions {
         public static void addLongList(this VRage.ByteStream stream, List<long> L) {
             if (L == null) {
                 stream.addUShort(0);
+                //Log.Info("Adding long list of " + 0 + " at " + stream.Position + " / " + stream.Length, "addLongList");
                 return;
             }
 
             // Write length
             stream.addUShort((ushort)L.Count);
+            //Log.Info("Adding long list of " + L.Count + " at " + stream.Position + " / " + stream.Length, "addLongList");
 
             // Write data
             foreach (long l in L)
@@ -212,25 +219,31 @@ namespace SEGarden.Extensions {
             // Read length
             ushort len = stream.getUShort();
 
-            /*
+            //Log.Info("Getting long list of " + L.Count + " at " + stream.Position + " / " + stream.Length, "getLongList");
+
             if (len == 0)
-                return null;
-            */
+                return L;
 
             // Read data
             for (ushort i = 0; i < len; ++i)
                 L.Add(stream.getLong());
 
+            //Log.Info("Finished getting long list from stream at pos: " + stream.Position + " / " + stream.Length, "getLongList");
             return L;
         }
 
         public static void addVector3D(this VRage.ByteStream stream, Vector3D v) {
-            v.AddToByteStream(stream);
+            stream.addDouble(v.X);
+            stream.addDouble(v.Y);
+            stream.addDouble(v.Z);
         }
 
         public static Vector3D getVector3D(this VRage.ByteStream stream) {
             Vector3D v = new Vector3D();
-            v.RemoveFromByteStream(stream);
+            v.X = stream.getDouble();
+            v.Y = stream.getDouble();
+            v.Z = stream.getDouble();
+            //Log.Trace("getVector3D got vector " + v, "AddToByteStream");
             return v;
         }
 

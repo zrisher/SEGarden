@@ -1,4 +1,3 @@
-/*
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,48 +16,43 @@ using SEGarden;
 
 namespace SEGarden.Extensions {
 
-	/// <summary>
-	/// Helper functions for SE Players
-	/// </summary>
-	public static class PlayerExtension {
+    /// <summary>
+    /// Helper functions for SE Players
+    /// </summary>
+    public static class PlayerExtension {
 
+        public static bool IsAdmin(this IMyPlayer player) {
+            if (GardenGateway.RunningOn == Logic.RunLocation.Singleplayer)
+                return true;
 
-		public static bool IsAdmin(this IMyPlayer player) {
-			if (Utility.General.isOffline())
-				return true;
+            if (player.IsHost())
+                return true;
 
-			if (player.IsHost())
-				return true;
+            if (player.isAuthenticatedAdmin())
+                return true;
 
-			if (player.isAuthenticatedAdmin())
-				return true;
+            return false;
+        }
 
-			return false;
-		}
+        public static bool isAuthenticatedAdmin(this IMyPlayer player) {
+            var clients = MyAPIGateway.Session.GetCheckpoint("null").Clients;
+            if (clients != null) {
+                var client = clients.FirstOrDefault(
+                    c => c.SteamId == player.SteamUserId && c.IsAdmin);
+                return (client != null);
+            }
 
-		public static bool isAuthenticatedAdmin(this IMyPlayer player) {
-			try {
-				var clients = MyAPIGateway.Session.GetCheckpoint("null").Clients;
-				if (clients != null) {
-					var client = clients.FirstOrDefault(
-						c => c.SteamId == player.SteamUserId && c.IsAdmin);
-					return (client != null);
-				}
-			}
-			catch { }
+            return false;
+        }
 
-			return false;
-		}
+        public static bool IsHost(this IMyPlayer player) {
+            return MyAPIGateway.Multiplayer.IsServerPlayer(player.Client);
+        }
 
-		public static bool IsHost(this IMyPlayer player) {
-			try {
-				return MyAPIGateway.Multiplayer.IsServerPlayer(player.Client);
-			}
-			catch { }
+        public static IMyFaction GetFaction(this IMyPlayer player) {
+            return MyAPIGateway.Session.Factions.TryGetPlayerFaction(player.PlayerID);
+        }
 
-			return false;
-		}
+    }
 
-	}
 }
-*/

@@ -59,6 +59,7 @@ namespace SEGarden.Messaging {
             };
 
             container.Send();
+
         }
 
         public void SendToServer() {

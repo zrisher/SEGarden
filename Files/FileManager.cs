@@ -45,7 +45,7 @@ namespace SEGarden.Files {
 
         public void Initialize() {
             Ready = true;
-            Log.Trace("Initialized File Manager", "Initialize");
+            //Log.Trace("Initialized File Manager", "Initialize");
         }
 
         public void writeLine(String output, String fileName) {
@@ -65,7 +65,8 @@ namespace SEGarden.Files {
         private bool CanWriteStringToFile(String output, String fileName) {
 
             if (!Ready) {
-                Log.Error("Filemanager not initialized", "CanWriteStringToFile");
+                // This would never log if filemanager not ready
+                //Log.Error("Filemanager not initialized", "CanWriteStringToFile");
                 return false;
             }
 
@@ -96,8 +97,8 @@ namespace SEGarden.Files {
         }
 
         public void Overwrite(String output, String fileName) {
-            Log.Trace(String.Format("Overwrite file \"{0}\" with string of length {1}",
-                fileName, output.Length), "Overwrite");
+            //Log.Trace(String.Format("Overwrite file \"{0}\" with string of length {1}",
+            //    fileName, output.Length), "Overwrite");
 
             if (!CanWriteStringToFile(output, fileName)) return;
 
@@ -106,7 +107,7 @@ namespace SEGarden.Files {
         }
 
         public void Read<T>(String fileName, ref T result) {
-            Log.Trace(String.Format("Read file \"{0}\"", fileName), "Read");
+            //Log.Trace(String.Format("Read file \"{0}\"", fileName), "Read");
 
             if (!Exists(fileName)) return;
             FileHandlerBase handler = getHandler(fileName);
@@ -114,7 +115,7 @@ namespace SEGarden.Files {
         }
 
         public T ReadXML<T>(String fileName) {
-            Log.Trace("ReadXML from " + fileName, "ReadXML");
+            //Log.Trace("ReadXML from " + fileName, "ReadXML");
 
             if (!Exists(fileName)) {
                 Log.Error("No file found", "ReadXML");
@@ -169,7 +170,7 @@ namespace SEGarden.Files {
                 return false;
             }
 
-            Log.Trace("File exists: " + fileName, "Exists");
+            //Log.Trace("File exists: " + fileName, "Exists");
             return true;
         }
 
