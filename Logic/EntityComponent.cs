@@ -20,15 +20,15 @@ namespace SEGarden.Logic {
         public EntityComponent(IMyEntity entity) : base() {
             Entity = entity;
             EntityId = entity.EntityId;
-            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
+            Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
             Log.Trace("Finished EntityComponent ctr", "ctr");
         }
 
         public EntityComponent(VRage.ByteStream stream) : base() {
             EntityId = stream.getLong();
             Entity = MyAPIGateway.Entities.GetEntityById(EntityId);
-            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
-            Log = new Logger("SEGarden.Logic.EntityComponent", EntityId.ToString());
+            Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
+            Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
             Log.Trace("Finished EntityComponent deserialize", "ctr");
         }
 

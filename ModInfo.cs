@@ -7,7 +7,7 @@ namespace SEGarden {
 
     class ModInfo {
 
-        public const String Version = "0.8.1";
+        public const String Version = "0.9.2";
 
     }
 }

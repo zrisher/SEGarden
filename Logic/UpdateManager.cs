@@ -316,6 +316,23 @@ namespace SEGarden.Logic {
             }
         }
 
+        private void TerminateAllEntityComponentsOnRemoved(IMyEntity entity) {
+            Type entityBuilderType = entity.GetObjectBuilder().GetType();
+
+            Log.Trace("Terminating components for entity " + entity.EntityId, 
+                "TerminateAllEntityComponentsOnRemoved");
+            //    " for entity " + entity.EntityId + " of type " + entityBuilderType,
+            //    "RunAllEntityComponentConstructorsOnAdded");
+
+            foreach (SessionComponent c in Enumerable.Reverse(RegisteredComponents)) {
+                EntityComponent entityComp = c as EntityComponent;
+
+                if (entityComp != null && entityComp.EntityId == entity.EntityId) {
+                    TerminateComponent(c);
+                }
+            }
+        }
+
         private void RunEntityComponentConstructorOnEntity(Action<IMyEntity> constructor, IMyEntity entity) {
             //Log.Trace("Running constructor on entity " + entity.EntityId,
             //    "RunEntityComponentConstructorOnAdded");
@@ -454,6 +471,14 @@ namespace SEGarden.Logic {
             }
         }
 
+        private void Entities_OnEntityRemove(IMyEntity entity) {
+            Log.Trace("Entity " + entity.EntityId + " removed from game", "Entities_OnEntityRemove");
+            UpdateActions.Enqueue(() => {
+                TerminateAllEntityComponentsOnRemoved(entity);
+            });
+        }
+
+
         protected override void UnloadData() {
             //Log.Trace("Update Manager unloading data", "UnloadData");
             base.UnloadData();
@@ -492,6 +517,7 @@ namespace SEGarden.Logic {
             }
 
             MyAPIGateway.Entities.OnEntityAdd += Entities_OnEntityAdd;
+            MyAPIGateway.Entities.OnEntityRemove += Entities_OnEntityRemove;
 
             Instance = this;
             Status = RunStatus.Running;
@@ -580,7 +606,8 @@ namespace SEGarden.Logic {
                 TerminateComponent(c);
             }
 
-            MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityAdd;
+            MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityRemove;
+            MyAPIGateway.Entities.OnEntityRemove -= Entities_OnEntityRemove;
 
             Status = RunStatus.Terminated;
             Log.Debug("Finished Terminating Update Manager", "Terminate");

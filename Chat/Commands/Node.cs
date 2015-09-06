@@ -29,7 +29,20 @@ namespace SEGarden.Chat.Commands {
         public String Word { get; private set; }
         public String Alias { get; private set; }
         public String ShortInfo { get; private set; }
-        public String LongInfo { get; private set; }
+        public String LongInfo {
+            get {
+                if (LongInfoFunc == null) return LongInfoString;
+                try {
+                    return LongInfoFunc.Invoke();
+                }
+                catch (Exception e) {
+                    // TODO Log error
+                    return "";
+                }
+            }
+        }
+        public String LongInfoString { get; private set; }
+        public Func<String> LongInfoFunc { get; private set; }
         public String FullCommand { get; private set; }
         public int Security { get; private set; }
         public String DomainTitle { get; private set; }
@@ -65,10 +78,27 @@ namespace SEGarden.Chat.Commands {
             Word = word;
             Alias = alias;
             ShortInfo = shortInfo;
-            LongInfo = longInfo;
+            LongInfoString = longInfo;
             Security = security;
             DomainTitle = domainTitle;
         }
+
+        protected Node(
+            String word,
+            String shortInfo,
+            Func<String> longInfo,
+            int security = 0,
+            String alias = null,
+            String domainTitle = "Chat Commands") {
+
+            Word = word;
+            Alias = alias;
+            ShortInfo = shortInfo;
+            LongInfoFunc = longInfo;
+            Security = security;
+            DomainTitle = domainTitle;
+        }
+
 
         public bool Matches(String word) {
             if (word == Word) return true;
