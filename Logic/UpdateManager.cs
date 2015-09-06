@@ -317,10 +317,22 @@ namespace SEGarden.Logic {
         }
 
         private void TerminateAllEntityComponentsOnRemoved(IMyEntity entity) {
-            Type entityBuilderType = entity.GetObjectBuilder().GetType();
+            if (entity == null) {
+                Log.Warning("Received null entity", "TerminateAllEntityComponentsOnRemoved");
+                return;
+            }
 
-            Log.Trace("Terminating components for entity " + entity.EntityId, 
-                "TerminateAllEntityComponentsOnRemoved");
+            MyObjectBuilder_EntityBase builder = entity.GetObjectBuilder();
+
+            if (builder == null) {
+                Log.Warning("Received null builder for entity " + entity.EntityId, "TerminateAllEntityComponentsOnRemoved");
+                return;
+            }
+
+            Type entityBuilderType = builder.GetType();
+
+            //Log.Trace("Terminating components for entity " + entity.EntityId, 
+            //    "TerminateAllEntityComponentsOnRemoved");
             //    " for entity " + entity.EntityId + " of type " + entityBuilderType,
             //    "RunAllEntityComponentConstructorsOnAdded");
 
@@ -463,6 +475,7 @@ namespace SEGarden.Logic {
 
         private void Entities_OnEntityAdd(IMyEntity entity) {
             //Log.Trace("Entity " + entity.EntityId + " added to game", "Entities_OnEntityAdd");
+            //.Save helps us sort out all the stuff that doesn't have OBs, like bullets
             if (entity.Save) {
                 UpdateActions.Enqueue(() => {
                     //Log.Trace("Registering entity from OnEntityAdded", "action");
@@ -473,9 +486,12 @@ namespace SEGarden.Logic {
 
         private void Entities_OnEntityRemove(IMyEntity entity) {
             Log.Trace("Entity " + entity.EntityId + " removed from game", "Entities_OnEntityRemove");
-            UpdateActions.Enqueue(() => {
-                TerminateAllEntityComponentsOnRemoved(entity);
-            });
+            //.Save helps us sort out all the stuff that doesn't have OBs, like bullets
+            if (entity.Save) {
+                UpdateActions.Enqueue(() => {
+                    TerminateAllEntityComponentsOnRemoved(entity);
+                });
+            }
         }
 
 
