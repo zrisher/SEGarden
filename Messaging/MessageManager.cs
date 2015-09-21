@@ -82,13 +82,13 @@ namespace SEGarden.Messaging {
 
         private void RegisterHandler(ushort domainId, MessageHandlerBase handler) {
             if (RegisteredHandlers.ContainsKey(domainId)) {
-                Log.Error("Cannot register another handler for message domain " + domainId, 
-                    "AddHandler");
+                Log.Error("Cannot register another handler for message domain " + domainId,
+                    "RegisterHandler");
                 return;
             }
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(domainId, handler.ReceiveBytes);
             RegisteredHandlers.Add(domainId, handler);
-            Log.Trace("Registered message handler for Id " + domainId, "AddHandler");
+            Log.Trace("Registered message handler for Id " + domainId, "RegisterHandler");
         }
 
         private void QueueHandler(ushort messageId, MessageHandlerBase handler) {

@@ -46,8 +46,8 @@ namespace SEGarden.Messaging {
 
         public void Send(ulong destSteamId, MessageDestinationType destType) {
 
-            Log.Trace("Sending message with domain " + _DomainId + 
-                " and type " + _TypeId, "Send");
+            //Log.Trace("Sending message with domain " + _DomainId + 
+            //    " and type " + _TypeId, "Send");
 
             MessageContainer container = new MessageContainer() {
                 Body = ToBytes(),

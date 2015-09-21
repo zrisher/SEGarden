@@ -262,8 +262,8 @@ namespace SEGarden.Logic {
             bool terminateOnError = false) 
         {
             if (ShouldRunForRegistered(targetLocation)) {
-                Log.Debug("Registering component " + component.ComponentName, 
-                    "RegisterComponentInternal");
+                //Log.Debug("Registering component " + component.ComponentName, 
+                //    "RegisterComponentInternal");
                 InitializeComponent(component, terminateOnError);
                 RegisteredComponents.Add(component);
             }
@@ -339,7 +339,8 @@ namespace SEGarden.Logic {
             foreach (SessionComponent c in Enumerable.Reverse(RegisteredComponents)) {
                 EntityComponent entityComp = c as EntityComponent;
 
-                if (entityComp != null && entityComp.EntityId == entity.EntityId) {
+                if (entityComp != null && entityComp.EntityId == entity.EntityId &&
+                    entityComp.IsRunning) {
                     TerminateComponent(c);
                 }
             }
@@ -363,7 +364,7 @@ namespace SEGarden.Logic {
             if (c.Status == RunStatus.NotInitialized) {
                 
                 try {
-                    Log.Debug("Initializing component " + c.ComponentName, "InitializeComponent");
+                    //Log.Debug("Initializing component " + c.ComponentName, "InitializeComponent");
                     c.Initialize();
                     RegisterUpdatesForComponent(c, terminateOnError);
                     c.Status = RunStatus.Running;
@@ -485,7 +486,7 @@ namespace SEGarden.Logic {
         }
 
         private void Entities_OnEntityRemove(IMyEntity entity) {
-            Log.Trace("Entity " + entity.EntityId + " removed from game", "Entities_OnEntityRemove");
+            //Log.Trace("Entity " + entity.EntityId + " removed from game", "Entities_OnEntityRemove");
             //.Save helps us sort out all the stuff that doesn't have OBs, like bullets
             if (entity.Save) {
                 UpdateActions.Enqueue(() => {

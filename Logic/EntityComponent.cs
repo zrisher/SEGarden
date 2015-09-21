@@ -15,35 +15,33 @@ namespace SEGarden.Logic {
 
         protected IMyEntity Entity;
 
-        protected static Logger Log;
+        protected Logger Log;
 
         public EntityComponent(IMyEntity entity) : base() {
             Entity = entity;
-            EntityId = entity.EntityId;
             Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
-            Log.Trace("Finished EntityComponent ctr", "ctr");
+            //Log.Trace("Finished EntityComponent ctr", "ctr");
         }
 
         public EntityComponent(VRage.ByteStream stream) : base() {
-            EntityId = stream.getLong();
-            Entity = MyAPIGateway.Entities.GetEntityById(EntityId);
+            long entityId = stream.getLong();
+            Entity = MyAPIGateway.Entities.GetEntityById(entityId);
             Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
-            Log = new Logger("SEGarden.Logic.EntityComponent", (() => EntityId.ToString()));
-            Log.Trace("Finished EntityComponent deserialize", "ctr");
+            //Log.Trace("Finished EntityComponent deserialize", "ctr");
         }
 
-        public long EntityId { get; protected set; }
+        public long EntityId { get { return Entity.EntityId; } }
         // This can change over time, no events, so get it instead of storing
         public string DisplayName { get { return Entity.DisplayName;  } }
 
         public override void Initialize() {
-            Log.Trace("Initialize entity component abstract", "Initialize");
+            //Log.Trace("Initialize entity component abstract", "Initialize");
             Entity.OnMarkForClose += OnClose; // should we use closing or close instead?
             base.Initialize();
         }
 
         private void OnClose(IMyEntity e) {
-            Log.Trace("Attached entity is closing", "OnClose");
+            //Log.Trace("Attached entity is closing", "OnClose");
             try { TerminateConditional(); }
             catch (Exception ex) {
                 Log.Error("Error terminating on close: " + ex, "OnClose");
@@ -52,7 +50,7 @@ namespace SEGarden.Logic {
         }
 
         public override void Terminate() {
-            Log.Trace("Terminate entity component abstract", "Terminate");
+            //Log.Trace("Terminate entity component abstract", "Terminate");
             Entity.OnMarkForClose -= OnClose;
             base.Terminate();
         }

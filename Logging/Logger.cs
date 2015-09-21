@@ -39,10 +39,10 @@ namespace SEGarden.Logging
 
 		// Log descriptors, functions take precedence over strings
         // We allow these to change over time, useful for class inheritance
-        public Func<String> InstanceNameFunc;
-        public String ClassName, InstanceName;
+        private Func<String> InstanceNameFunc;
+        public String ClassName;
 
-        private String FileName, ThreadName;
+        private String FileName, ThreadName, InstanceName;
         private StringBuilder StringCache = new StringBuilder();
 
         #endregion
