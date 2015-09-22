@@ -8,12 +8,12 @@ using VRageMath;
 namespace SEGarden.Math {
 
     /// <summary>
-    /// An object that can be stored in a generalized AABBTree
+    /// An object that can be stored in multiple generalized AABBTrees
     /// </summary>
     public interface AABBEntity {
 
         BoundingBoxD BoundingBox { get; }
-        int TreeProxyID { get; set; }
+        Dictionary<long, int> ProxyIdsByTree { get; set; }
         Vector3D WorldTranslation { get; }
         Vector3D LinearVelocity { get; }
         

@@ -14,12 +14,18 @@ using MyDynamicAABBTree = VRageMath.MyDynamicAABBTree;
 ///</remarks>
 namespace SEGarden.Math {
 
+    using Logging;
+
     public class AABBTree {
 
-        public static readonly Vector3D AABB_EXTENSION = new Vector3D(3.0f);
-        public const int PROXY_ID_UNITIALIZED = -1;
+        private static readonly Vector3D AABB_EXTENSION = new Vector3D(3.0f);
+        private static readonly Logger Log = new Logger("SEGarden.Math.AABBTree");
+        private const int PROXY_ID_UNITIALIZED = -1;
 
-        private MyDynamicAABBTreeD m_aabbTree;
+        private static int LastAssignedTreeId = 0;
+
+        private MyDynamicAABBTreeD MathTree;
+        private int TreeId;
 
         public AABBTree() {
             Init();
@@ -32,7 +38,9 @@ namespace SEGarden.Math {
         */
 
         private void Init() {
-            m_aabbTree = new MyDynamicAABBTreeD(AABB_EXTENSION);
+            MathTree = new MyDynamicAABBTreeD(AABB_EXTENSION);
+            TreeId = LastAssignedTreeId + 1;
+            LastAssignedTreeId = TreeId;
         }
 
         public BoundingBoxD GetEntityAABB(AABBEntity entity) {
@@ -51,28 +59,40 @@ namespace SEGarden.Math {
         }
 
         public void Add(AABBEntity entity) {
+            int proxyId = GetProxyIdForEntity(entity);
+            Log.Trace("Add entity " + proxyId, "Add");
+
             BoundingBoxD bbox = GetEntityAABB(entity);
             if (bbox.Size == Vector3D.Zero) return;  // don't add entities with zero bounding boxes
 
-            entity.TreeProxyID = m_aabbTree.AddProxy(ref bbox, entity, 0);
+            int newProxyId = MathTree.AddProxy(ref bbox, entity, 0);
+            SetProxyIdForEntity(entity, newProxyId);
+
+            Log.Trace("Finished Add entity " + newProxyId, "Add");
         }
 
 
 
         public void Remove(AABBEntity entity) {
-            if (entity.TreeProxyID != PROXY_ID_UNITIALIZED) {
-                m_aabbTree.RemoveProxy(entity.TreeProxyID);
-                entity.TreeProxyID = PROXY_ID_UNITIALIZED;
+            int proxyId = GetProxyIdForEntity(entity);
+            Log.Trace("Remove entity " + proxyId, "Remove");
+
+            if (proxyId != PROXY_ID_UNITIALIZED) {
+                MathTree.RemoveProxy(proxyId);
+                SetProxyIdForEntity(entity, PROXY_ID_UNITIALIZED);
             }
+
+            Log.Trace("Finished Remove entity " + proxyId, "Remove");
         }
 
         public void Clear() {
             Init();
-            m_aabbTree.Clear();
+            MathTree.Clear();
         }
 
         public void Move(AABBEntity entity) {
-            if (entity.TreeProxyID != PROXY_ID_UNITIALIZED) {
+            int proxyId = GetProxyIdForEntity(entity);
+            if (proxyId != PROXY_ID_UNITIALIZED) {
                 BoundingBoxD bbox = GetEntityAABB(entity);
 
                 if (bbox.Size == Vector3D.Zero)  // remove entities with zero bounding boxes
@@ -81,21 +101,48 @@ namespace SEGarden.Math {
                     return;
                 }
 
-                m_aabbTree.MoveProxy(entity.TreeProxyID, ref bbox, Vector3D.Zero);
+                MathTree.MoveProxy(proxyId, ref bbox, Vector3D.Zero);
             }
         }
 
         public void GetAllEntitiesInBox<T>(ref BoundingBoxD box, List<T> result) {
-            m_aabbTree.OverlapAllBoundingBox<T>(ref box, result, 0, false);
+            MathTree.OverlapAllBoundingBox<T>(ref box, result, 0, false);
         }
 
         public void GetAllEntitiesInSphere<T>(ref BoundingSphereD sphere, List<T> result) {
-            m_aabbTree.OverlapAllBoundingSphere<T>(ref sphere, result, false);
+            MathTree.OverlapAllBoundingSphere<T>(ref sphere, result, false);
         }
 
         public void GetAllEntitiesInRay<T>(ref LineD ray, List<MyLineSegmentOverlapResult<T>> result) {
-            m_aabbTree.OverlapAllLineSegment<T>(ref ray, result);
+            MathTree.OverlapAllLineSegment<T>(ref ray, result);
         }
+
+        #region AABBEntity Accessors
+
+        // We define these here because AABBEntity is an interface
+
+        private int GetProxyIdForEntity(AABBEntity entity) {
+            if (entity.ProxyIdsByTree == null) {
+                entity.ProxyIdsByTree = new Dictionary<long, int>();
+            }
+
+            if (!entity.ProxyIdsByTree.ContainsKey(TreeId)) {
+                return PROXY_ID_UNITIALIZED;
+            }
+            else {
+                return entity.ProxyIdsByTree[TreeId];
+            }
+        }
+
+        private void SetProxyIdForEntity(AABBEntity entity, int newId) {
+            if (entity.ProxyIdsByTree == null) {
+                entity.ProxyIdsByTree = new Dictionary<long, int>();
+            }
+
+            entity.ProxyIdsByTree[TreeId] = newId;
+        }
+
+        #endregion
 
     }
 }

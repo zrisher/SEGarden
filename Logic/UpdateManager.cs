@@ -564,6 +564,7 @@ namespace SEGarden.Logic {
             foreach (KeyValuePair<uint, List<ComponentUpdate>> kvp in RegisteredUpdates) {
                 if (Frame % kvp.Key == 0) {
                     foreach (ComponentUpdate item in kvp.Value) {
+                        //Log.Trace("Running components for freq " + kvp.Key + " frame " + Frame, "Update");
 
                         if (item.Component.Status != RunStatus.Running) {
                             Log.Debug("Found terminated component in update list, " +
@@ -587,6 +588,8 @@ namespace SEGarden.Logic {
                                 }
                             }
                         }
+
+                        //Log.Trace("Finished running components for freq " + kvp.Key + " frame " + Frame, "Update");
                     }
                 }
             }
