@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using VRage.Game;
 using VRageMath;
 
-using Sandbox.Common;
-using Sandbox.Game.Entities;
-using Sandbox.Engine.Utils;
-
 using MyDynamicAABBTree = VRageMath.MyDynamicAABBTree;
-
 
 ///<remarks>
 /// Taken from the static SE class MyGamePruningStructure, adapted for flexible use

@@ -1,14 +1,8 @@
-﻿
-using System;
+﻿using System;
 //using System.Collections.Generic;
 //using System.Linq;
 using System.Text;
 //using System.Threading;
-
-using Sandbox.Common;
-using Sandbox.Definitions;
-using Sandbox.ModAPI;
-using VRage;
 
 namespace SEGarden.Logging
 {
@@ -19,7 +13,7 @@ namespace SEGarden.Logging
 	/// <remarks>
     /// Pattern: [%time][%thread][%level][%class][%instance][%method] - %Message
 	/// </remarks>
-	public class Logger { //: Sandbox.Common.MySessionComponentBase {
+	public class Logger { //: VRage.Game.MySessionComponentBase {
 
         #region Static
 

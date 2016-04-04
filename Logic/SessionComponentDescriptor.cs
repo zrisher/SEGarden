@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Sandbox.Common;
+using VRage.Game;
 
 namespace SEGarden.Logic {
 

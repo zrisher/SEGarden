@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using VRage.Game.Components;
 using VRage.ModAPI;
-using VRage.Components;
 
 namespace SEGarden.Extensions {
 

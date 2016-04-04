@@ -26,12 +26,6 @@ namespace SEGarden.Threading {
                     return Queue.Count;
             }
         }
-        public T[] DebugItems {
-            get {
-                using (lock_Queue.AcquireSharedUsing())
-                    return Queue.DebugItems;
-            }
-        }
 
         public T this[int index] {
             get {

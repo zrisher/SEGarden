@@ -5,13 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Sandbox.Common;
-using Sandbox.Common.ObjectBuilders;
+using VRage.Game;
+using VRage.Game.ObjectBuilders;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Components;
-using Sandbox.Definitions;
-using Sandbox.ModAPI;
 using InGame = Sandbox.ModAPI.Ingame;
 using Interfaces = Sandbox.ModAPI.Interfaces;
 

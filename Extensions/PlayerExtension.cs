@@ -4,13 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Sandbox.Common;
-using Sandbox.Common.ObjectBuilders;
-using BuilderDefs = Sandbox.Common.ObjectBuilders.Definitions;
-using Sandbox.Definitions;
 using Sandbox.ModAPI;
-using InGame = Sandbox.ModAPI.Ingame;
-using Interfaces = Sandbox.ModAPI.Interfaces;
+using VRage.Game.ModAPI;
 
 using SEGarden;
 

@@ -7,11 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.IO;
 
-using Sandbox.Common;
-using Sandbox.Definitions;
-using Sandbox.Engine;
-using Sandbox.Game;
-using Sandbox.ModAPI;
+using VRage.Game;
 
 namespace SEGarden {
 

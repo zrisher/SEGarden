@@ -5,8 +5,10 @@ using System.Text;
 
 using Sandbox.ModAPI;
 
-using SEGarden.Messaging;
+using VRage;
+using VRage.Game.ModAPI;
 
+using SEGarden.Messaging;
 using SEGarden.Extensions;
 using SEGarden.Logging;
 

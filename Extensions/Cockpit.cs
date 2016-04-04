@@ -1,14 +1,12 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Sandbox.ModAPI;
 using Ingame = Sandbox.ModAPI.Ingame;
-
 using VRage.ModAPI;
-using VRage.Components;
+using VRage.Game.ModAPI;
+
 
 namespace SEGarden.Extensions {
 

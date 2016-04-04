@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Sandbox.Common;
-using Sandbox.Common.ObjectBuilders;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Collections;
+
+using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 

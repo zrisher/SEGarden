@@ -4,7 +4,7 @@ using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
 
-using Sandbox.Common.ObjectBuilders;
+using VRage.Game;
 using VRage.ObjectBuilders;
 
 using SEGarden.Logging;
@@ -27,7 +27,7 @@ namespace SEGarden.Extensions.Objectbuilders {
             if (b.ComponentContainer == null) {
                 Log.Warning("ConcealableGrid builder had a null ComponentContainer and we can't fill it (type not allowed in script). So trying to allow.", "FillNullsWithDefaults");
                 // MyObjectBuilder_ComponentContainer not allowed in script : /
-                //Builder.ComponentContainer = new Sandbox.Common.ObjectBuilders.ComponentSystem.MyObjectBuilder_ComponentContainer();
+                //Builder.ComponentContainer = new VRage.Game.ObjectBuilders.ComponentSystem.MyObjectBuilder_ComponentContainer();
             }
             if (b.EntityDefinitionId == null) {
                 Log.Warning("ConcealableGrid builder had a null EntityDefinitionId, filling with default", "FillNullsWithDefaults");
@@ -79,10 +79,6 @@ namespace SEGarden.Extensions.Objectbuilders {
             }
             if (b.JumpDriveDirection == null) {
                 Log.Warning("ConcealableGrid builder had a null JumpDriveDirection, can't save.", "FillNullsWithDefaults");
-                //return false;
-            }
-            if (b.JumpElapsedTicks == null) {
-                Log.Warning("ConcealableGrid builder had a null JumpElapsedTicks, can't save.", "FillNullsWithDefaults");
                 //return false;
             }
             if (b.LinearVelocity == null) {

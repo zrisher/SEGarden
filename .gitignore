@@ -1,4 +1,6 @@
 *.suo
+*.sln
+*.csproj
 *.csproj.user
 *.sdf
 *.opensdf
