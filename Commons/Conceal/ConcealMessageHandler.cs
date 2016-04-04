@@ -9,11 +9,6 @@ using SEGarden.Logic;
 using SEGarden.Messaging;
 using SEGarden.Notifications;
 
-using GP.Concealment.Messages;
-using GP.Concealment.Messages.Responses;
-using GP.Concealment.Sessions;
-using GP.Concealment.World.Entities;
-
 namespace SEGarden.Commons.Conceal {
 
     public abstract class ConcealMessageHandler : MessageHandlerBase {
