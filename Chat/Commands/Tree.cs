@@ -63,6 +63,8 @@ namespace SEGarden.Chat.Commands {
         }
 
         public void addChild(Node node) {
+            if (node == null) return;
+
             if (Children.Count > 0)
                 foreach (Node child in Children)
                     if (child.Word == node.Word)
