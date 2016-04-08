@@ -79,6 +79,12 @@ namespace SEGarden.World.Inventory {
         protected Dictionary<MyDefinitionId, MyFixedPoint> Counts =
             new Dictionary<MyDefinitionId, MyFixedPoint>();
 
+        public InventoryItemsCount() { }
+
+        public InventoryItemsCount(Dictionary<MyDefinitionId, MyFixedPoint> counts) {
+            Counts = counts;
+        }
+
         /*
         public void SetCount(MyDefinitionId defId, MyFixedPoint count) {
             Counts[defId] = count;
@@ -96,6 +102,7 @@ namespace SEGarden.World.Inventory {
         public void Set(MyDefinitionId defId, MyFixedPoint count) {
             Counts[defId] = count;
         }
+
 
         public bool IsEmpty() {
             return Counts.Values.All((x) => (x <= MyFixedPoint.Zero));
