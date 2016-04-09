@@ -13,6 +13,7 @@ using VRage.Game.Entity; // from VRage.Game.dll
 using VRage.Game.ModAPI; // from VRage.Game.dll
 using VRage.ModAPI; // from VRage.Game.dll
 using VRage.ObjectBuilders;
+using VRageMath;
 
 using SEGarden.Logging;
 
@@ -26,6 +27,17 @@ namespace SEGarden.World.Inventory {
     /// TODO: Filter found inventories by a configurable subtypename
     /// </remarks>
     class GridInventoriesManager {
+
+        private Action<InventoryItemsCount> ContentsChange;
+
+        public event Action<InventoryItemsCount> ContentsChanged {
+            add { ContentsChange += value; }
+            remove { ContentsChange -= value; }
+        }
+
+        private void NotifyContentsChanged(InventoryItemsCount change) {
+            if (ContentsChange != null) ContentsChange(change);
+        }
 
         public InventoryItemsCount Totals;
 
@@ -108,34 +120,35 @@ namespace SEGarden.World.Inventory {
 
         private void UpdateInventory(MyInventoryBase inventory) {
             Log.Trace("Updating inventory cache with inventory " + inventory.Entity.ToString(), "UpdateInventory");
-            InventoryItemsCount itemCache;
-            if (!InventoryTotals.TryGetValue(inventory, out itemCache)) {
+            InventoryItemsCount cachedCount;
+            if (!InventoryTotals.TryGetValue(inventory, out cachedCount)) {
                 Log.Error("Received an update for inventory we're not tracking.", "UpdateInventory");
                 return;
             }
 
-            Totals -= itemCache;
+            InventoryItemsCount originalCounts = cachedCount.Copy();
+            Totals -= originalCounts;
 
             if (WatchedItems != null) {
                 foreach (var id in WatchedItems) {
-                    itemCache.Set(id, inventory.GetItemAmount(id));
+                    cachedCount.Set(id, inventory.GetItemAmount(id));
                 }
             }
             else {
                 foreach (var item in inventory.GetItems()) {
-                    itemCache.Set(item.Content.GetObjectId(), item.Amount);
+                    cachedCount.Set(item.Content.GetObjectId(), item.Amount);
                 }
             }
 
-            Totals += itemCache;
-
+            Totals += cachedCount;
+            NotifyContentsChanged(cachedCount - originalCounts);
             DebugPrint();
         }
 
         private void DebugPrint() {
             Log.Debug("Displaying inventory contents for grid: " + Grid.DisplayName, "DebugInventories");
 
-            foreach (var kvp in Totals.GetCounts()) {
+            foreach (var kvp in Totals.Counts) {
                 Log.Debug("    " + kvp.Key.ToString() + " - " + kvp.Value, "DebugInventories");
             }
 
@@ -148,6 +161,42 @@ namespace SEGarden.World.Inventory {
                 }
             }
              * */
+        }
+
+        /// <summary>
+        /// Consumes a given selection of items from managed inventories
+        /// Adjusts the desired removal amount by how much we actually removed
+        /// and returns it.
+        /// </summary>
+        public void Consume(ref InventoryItemsCount toRemove, long consumerId = 0) {
+            VRage.Exceptions.ThrowIf<ArgumentNullException>(toRemove == null, "toRemove");
+
+            Log.Trace("toRemove: " + toRemove.ToString(), "Consume");
+
+            foreach (var itemToRemove in toRemove.Counts.Keys) {
+                MyFixedPoint remainingToRemove = toRemove.Get(itemToRemove);
+
+                Log.Trace(String.Format("Looking to remove: {0} of {1}", remainingToRemove, itemToRemove), "Consume");
+
+                foreach (var inventory in InventoryTotals.Keys) {
+                    if (remainingToRemove <= 0) break;
+             
+                    MyFixedPoint amountAvailable = inventory.GetItemAmount(itemToRemove);
+                    if (amountAvailable <= 0) continue;
+
+                    MyFixedPoint amountRemoved = amountAvailable < remainingToRemove ? 
+                        amountAvailable : remainingToRemove;
+
+                    Log.Trace(String.Format("Removing: {0} from {1}", amountRemoved, inventory.Entity.EntityId), "Consume");
+                    inventory.ConsumeItem(itemToRemove, amountRemoved, consumerId);
+
+                    remainingToRemove -= amountRemoved;
+                }
+
+                toRemove.Set(itemToRemove, remainingToRemove);
+            }
+
+            Log.Trace(String.Format("Remaining after attempted removals: {0}", toRemove.ToString()), "Consume");
         }
 
     }

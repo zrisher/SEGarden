@@ -36,13 +36,7 @@ namespace SEGarden.Chat.Commands {
             int inputsCount = inputs.Count;
             if (inputsCount == 0) return InfoNotice;
 
-            /*
-            return new WindowNotification() {
-                Text = "Invoking command " + FullCommand + " with inputs " + String.Join(" ", inputs),
-                BigLabel = "Garden Performance",
-                SmallLabel = FullCommand
-            };
-            */
+            //"Invoking command " + FullCommand + " with inputs " + String.Join(" ", inputs),
 
             String childWord = inputs[0];
             inputs.RemoveAt(0);
@@ -107,7 +101,7 @@ namespace SEGarden.Chat.Commands {
 
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
-                BigLabel = "Garden Performance",
+                BigLabel = "Command Tree Info",
                 SmallLabel = FullCommand
             };
 

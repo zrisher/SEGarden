@@ -64,7 +64,7 @@ namespace SEGarden.Chat.Commands {
             InfoAsChild = fullCommandWithArgs + " - " + ShortInfo;
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
-                BigLabel = "Garden Performance",
+                BigLabel = "Command Usage Info",
                 SmallLabel = FullCommand
             };
 

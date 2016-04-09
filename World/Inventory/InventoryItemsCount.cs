@@ -14,6 +14,8 @@ using VRage.Game.ModAPI; // from VRage.Game.dll
 using VRage.ModAPI; // from VRage.Game.dll
 using VRage.ObjectBuilders;
 
+using SEGarden.Logging;
+
 namespace SEGarden.World.Inventory {
 
     /// <summary>
@@ -22,6 +24,8 @@ namespace SEGarden.World.Inventory {
     public class InventoryItemsCount {
 
         public static InventoryItemsCount Zero = new InventoryItemsCount();
+
+        private static Logger Log = new Logger("InventoryItemsCount");
 
         #region Operators
 
@@ -51,17 +55,25 @@ namespace SEGarden.World.Inventory {
             return result;
         }
 
-        public static InventoryItemsCount operator *(InventoryItemsCount value1, MyFixedPoint value2) {
+        public static InventoryItemsCount operator *(InventoryItemsCount value1, float value2) {
             VRage.Exceptions.ThrowIf<ArgumentNullException>(value1 == null, "value1");
-            VRage.Exceptions.ThrowIf<ArgumentNullException>(value2 == null, "value2");
+
+            //Log.Trace(String.Format("Calculating {0} * {1}", value1.ToString(), value2), "operator *");
 
             InventoryItemsCount result = value1.Copy();
 
             foreach (var kvp in result.Counts) {
+                //Log.Trace(String.Format("Multiplying {0} * {1} for {3}", result.Counts[kvp.Key], value2, kvp.Key), "operator *");
                 result.Counts[kvp.Key] *= value2;
             }
 
+            //Log.Trace("Returning result", "operator *");
             return result;
+        }
+
+        public static InventoryItemsCount operator /(InventoryItemsCount value1, float value2) {
+            //Log.Trace(String.Format("Calculating {0} / {1}", value1.ToString(), value2), "operator /");
+            return value1 * (1 / value2);
         }
 
         /*
@@ -76,7 +88,7 @@ namespace SEGarden.World.Inventory {
 
         #endregion
 
-        protected Dictionary<MyDefinitionId, MyFixedPoint> Counts =
+        public readonly Dictionary<MyDefinitionId, MyFixedPoint> Counts =
             new Dictionary<MyDefinitionId, MyFixedPoint>();
 
         public InventoryItemsCount() { }
@@ -112,25 +124,33 @@ namespace SEGarden.World.Inventory {
             return other.Counts.All((kvp) => (kvp.Value <= Get(kvp.Key)));
         }
 
+        /*
         public Dictionary<MyDefinitionId, MyFixedPoint> GetCounts() {
             VRage.Exceptions.ThrowIf<FieldAccessException>(this.Counts == null, "this.Counts");
 
             return new Dictionary<MyDefinitionId, MyFixedPoint>(Counts);
         }
+        */
 
-        protected InventoryItemsCount Copy() {
+        public InventoryItemsCount Copy() {
+            //Log.Trace(String.Format("Copying {0}", this.ToString()), "Copy");
             InventoryItemsCount result = new InventoryItemsCount();
-            result.Counts = this.GetCounts();
+
+            foreach (var kvp in this.Counts) 
+                result.Set(kvp.Key, kvp.Value);
+
+            //Log.Trace("Returning result", "Copy");
             return result;
         }
 
         public String ToString() {
-            String result = "[ ";
+            List<String> results = new List<String>();
             foreach (var kvp in Counts) {
-                result += kvp.Key.ToString() + " " + kvp.Value.ToString() + ", ";
+                if (kvp.Value == 0) continue;
+                results.Add(kvp.Key.SubtypeName.ToString() + ": " + kvp.Value.ToString());
             }
 
-            return result + " ]";
+            return "[ " + String.Join(", ", results) + " ]";
         }
 
     }
