@@ -46,6 +46,8 @@ namespace SEGarden.World.Inventory {
         readonly Logger Log;
         readonly IMyCubeGrid Grid;
 
+        bool SkipNextNotify;
+
         public GridInventoriesManager(IMyCubeGrid grid, List<MyDefinitionId> watchedItems = null) {
             Grid = grid;
             Log = new Logger("SEGarden.World.Inventory.GridInventoriesManager", (() => Grid.EntityId.ToString()));
@@ -141,7 +143,14 @@ namespace SEGarden.World.Inventory {
             }
 
             Totals += cachedCount;
-            NotifyContentsChanged(cachedCount - originalCounts);
+
+            if (SkipNextNotify) {
+                SkipNextNotify = false;
+            }
+            else {
+                NotifyContentsChanged(cachedCount - originalCounts);
+            }
+
             DebugPrint();
         }
 
@@ -188,8 +197,9 @@ namespace SEGarden.World.Inventory {
                         amountAvailable : remainingToRemove;
 
                     Log.Trace(String.Format("Removing: {0} from {1}", amountRemoved, inventory.Entity.EntityId), "Consume");
-                    inventory.ConsumeItem(itemToRemove, amountRemoved, consumerId);
-
+                    SkipNextNotify = true;
+                    inventory.RemoveItemsOfType(amountRemoved, itemToRemove);
+                    //inventory.ConsumeItem(itemToRemove, amountRemoved);
                     remainingToRemove -= amountRemoved;
                 }
 

@@ -62,9 +62,9 @@ namespace SEGarden.World.Inventory {
 
             InventoryItemsCount result = value1.Copy();
 
-            foreach (var kvp in result.Counts) {
+            foreach (var key in value1.Counts.Keys) {
                 //Log.Trace(String.Format("Multiplying {0} * {1} for {3}", result.Counts[kvp.Key], value2, kvp.Key), "operator *");
-                result.Counts[kvp.Key] *= value2;
+                result.Counts[key] *= value2;
             }
 
             //Log.Trace("Returning result", "operator *");

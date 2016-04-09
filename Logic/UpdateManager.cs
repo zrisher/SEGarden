@@ -216,6 +216,7 @@ namespace SEGarden.Logic {
                         return;                    
                 }
 
+
                 // Run constructor
                 EntityComponent c;
                 //Log.Trace("Inside constructor wrapper, invoking " + e.EntityId, "EntityComponentCtr");
@@ -314,13 +315,22 @@ namespace SEGarden.Logic {
             }
         }
 
+        /*
         private void TerminateAllEntityComponentsOnRemoved(IMyEntity entity) {
             if (entity == null) {
                 Log.Warning("Received null entity", "TerminateAllEntityComponentsOnRemoved");
                 return;
             }
 
-            MyObjectBuilder_EntityBase builder = entity.GetObjectBuilder();
+            MyObjectBuilder_EntityBase builder;
+
+            try {
+                builder = entity.GetObjectBuilder();
+            } 
+            catch (Exception e) {
+                Log.Error("Error getting object builder for " + entity.ToString() + " : " + e, "TerminateAllEntityComponentsOnRemoved");
+                return;
+            }
 
             if (builder == null) {
                 Log.Warning("Received null builder for entity " + entity.EntityId, "TerminateAllEntityComponentsOnRemoved");
@@ -343,6 +353,7 @@ namespace SEGarden.Logic {
                 }
             }
         }
+        */
 
         private void RunEntityComponentConstructorOnEntity(Action<IMyEntity> constructor, IMyEntity entity) {
             //Log.Trace("Running constructor on entity " + entity.EntityId,
@@ -483,6 +494,7 @@ namespace SEGarden.Logic {
             }
         }
 
+        /*
         private void Entities_OnEntityRemove(IMyEntity entity) {
             //Log.Trace("Entity " + entity.EntityId + " removed from game", "Entities_OnEntityRemove");
             //.Save helps us sort out all the stuff that doesn't have OBs, like bullets
@@ -492,7 +504,7 @@ namespace SEGarden.Logic {
                 });
             }
         }
-
+        */
 
         protected override void UnloadData() {
             //Log.Trace("Update Manager unloading data", "UnloadData");
@@ -532,7 +544,7 @@ namespace SEGarden.Logic {
             }
 
             MyAPIGateway.Entities.OnEntityAdd += Entities_OnEntityAdd;
-            MyAPIGateway.Entities.OnEntityRemove += Entities_OnEntityRemove;
+            // Removal termination seems to be handled best by MyEntity.OnClose
 
             Instance = this;
             Status = RunStatus.Running;
@@ -624,8 +636,8 @@ namespace SEGarden.Logic {
                 TerminateComponent(c);
             }
 
-            MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityRemove;
-            MyAPIGateway.Entities.OnEntityRemove -= Entities_OnEntityRemove;
+            MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityAdd;
+            // Removal termination seems to be handled best by MyEntity.OnClose
 
             Status = RunStatus.Terminated;
             Log.Debug("Finished Terminating Update Manager", "Terminate");
