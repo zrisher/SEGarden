@@ -28,51 +28,58 @@ namespace SEGarden.World.Inventory {
     /// </remarks>
     class GridInventoriesManager {
 
-        private Action<InventoryItemsCount> ContentsChange;
+        private Action<ItemCountsAggregate> ContentsChange;
 
-        public event Action<InventoryItemsCount> ContentsChanged {
+        public event Action<ItemCountsAggregate> ContentsChanged {
             add { ContentsChange += value; }
             remove { ContentsChange -= value; }
         }
 
-        private void NotifyContentsChanged(InventoryItemsCount change) {
+        private void NotifyContentsChanged(ItemCountsAggregate change) {
             if (ContentsChange != null) ContentsChange(change);
         }
 
-        public InventoryItemsCount Totals;
+        public ItemCountsAggregate Totals;
 
-        readonly Dictionary<MyInventoryBase, InventoryItemsCount> InventoryTotals;
+        readonly Dictionary<MyInventoryBase, ItemCountsAggregate> InventoryTotals;
         readonly List<MyDefinitionId> WatchedItems;
         readonly Logger Log;
         readonly IMyCubeGrid Grid;
+
+        // Would be nice if this was whitelisted!
+        //Sandbox.Game.Entities.Inventory.MyInventoryAggregate InventoryAggregate;
 
         bool SkipNextNotify;
 
         public GridInventoriesManager(IMyCubeGrid grid, List<MyDefinitionId> watchedItems = null) {
             Grid = grid;
             Log = new Logger("SEGarden.World.Inventory.GridInventoriesManager", (() => Grid.EntityId.ToString()));
-            Totals = new InventoryItemsCount();
-            InventoryTotals = new Dictionary<MyInventoryBase, InventoryItemsCount>();
+            Totals = new ItemCountsAggregate();
+            InventoryTotals = new Dictionary<MyInventoryBase, ItemCountsAggregate>();
+            //InventoryAggregate = new Sandbox.Game.Entities.Inventory.MyInventoryAggregate();
             WatchedItems = watchedItems; 
         }
 
         public void Initialize() {
             Grid.OnBlockAdded += BlockAdded;
             Grid.OnBlockRemoved += BlockRemoved;
-
+            //InventoryAggregate.ContentsChanged += OnContentsChanged;
+            //InventoryAggregate.BeforeContentsChanged += BeforeContentsChanged;
+            
             List<IMySlimBlock> allBlocks = new List<IMySlimBlock>();
             Grid.GetBlocks(allBlocks);
             foreach (var block in allBlocks) {
                 BlockAdded(block);
-            }
+            }            
         }
 
         public void Terminate() {
             Grid.OnBlockAdded -= BlockAdded;
             Grid.OnBlockRemoved -= BlockRemoved;
+            //InventoryAggregate.ContentsChanged -= OnContentsChanged;
 
             foreach (var inventory in InventoryTotals.Keys) {
-                inventory.ContentsChanged -= UpdateInventory;
+                inventory.ContentsChanged -= OnContentsChanged;
             }
         }
 
@@ -91,9 +98,10 @@ namespace SEGarden.World.Inventory {
             if (!fatEntity.TryGetInventory(out inventory)) return;
 
             Log.Trace("Adding inventory " + slimblock.ToString(), "blockAdded");
-            InventoryTotals[inventory] = new InventoryItemsCount();
-            UpdateInventory(inventory);
-            inventory.ContentsChanged += UpdateInventory;
+            InventoryTotals[inventory] = new ItemCountsAggregate();
+            //InventoryAggregate.ChildList.AddComponent(inventory);
+            OnContentsChanged(inventory);
+            inventory.ContentsChanged += OnContentsChanged;
         }
 
         private void BlockRemoved(IMySlimBlock slimblock) {
@@ -111,24 +119,32 @@ namespace SEGarden.World.Inventory {
             MyInventoryBase inventory;
             if (!fatEntity.TryGetInventory(out inventory))
                 return;
-
+            
             Log.Trace("Removing inventory " + slimblock.ToString(), "blockRemoved");
             if (!InventoryTotals.Remove(inventory)) {
                 Log.Error("Received an removal for inventory we're not tracking.", "blockRemoved");
                 return;
             }
-            inventory.ContentsChanged -= UpdateInventory;
+
+            //InventoryAggregate.ChildList.RemoveComponent(inventory);
+            inventory.ContentsChanged -= OnContentsChanged;
         }
 
-        private void UpdateInventory(MyInventoryBase inventory) {
-            Log.Trace("Updating inventory cache with inventory " + inventory.Entity.ToString(), "UpdateInventory");
-            InventoryItemsCount cachedCount;
+        /*
+        private void BeforeContentsChanged(MyInventoryBase inventory) {
+            Log.Trace("BeforeContentsChanged called on inventory " + inventory.Entity.ToString(), "BeforeContentsChanged");
+        }
+        */
+
+        private void OnContentsChanged(MyInventoryBase inventory) {
+            Log.Trace("Updating inventory cache with inventory " + inventory.Entity.ToString(), "OnContentsChanged");
+          
             if (!InventoryTotals.TryGetValue(inventory, out cachedCount)) {
                 Log.Error("Received an update for inventory we're not tracking.", "UpdateInventory");
                 return;
             }
 
-            InventoryItemsCount originalCounts = cachedCount.Copy();
+            ItemCountsAggregate originalCounts = cachedCount.Copy();
             Totals -= originalCounts;
 
             if (WatchedItems != null) {
@@ -150,7 +166,7 @@ namespace SEGarden.World.Inventory {
             else {
                 NotifyContentsChanged(cachedCount - originalCounts);
             }
-
+  
             DebugPrint();
         }
 
@@ -177,20 +193,26 @@ namespace SEGarden.World.Inventory {
         /// Adjusts the desired removal amount by how much we actually removed
         /// and returns it.
         /// </summary>
-        public void Consume(ref InventoryItemsCount toRemove, long consumerId = 0) {
+        public void Consume(ref ItemCountsAggregate toRemove, long consumerId = 0) {
             VRage.Exceptions.ThrowIf<ArgumentNullException>(toRemove == null, "toRemove");
 
             Log.Trace("toRemove: " + toRemove.ToString(), "Consume");
 
-            foreach (var itemToRemove in toRemove.Counts.Keys) {
-                MyFixedPoint remainingToRemove = toRemove.Get(itemToRemove);
+            var items = new List<MyDefinitionId>(toRemove.Counts.Keys);
 
-                Log.Trace(String.Format("Looking to remove: {0} of {1}", remainingToRemove, itemToRemove), "Consume");
+            var inventories = new List<MyInventoryBase>(InventoryTotals.Keys);
 
-                foreach (var inventory in InventoryTotals.Keys) {
+            foreach (var item in items) {
+
+                //remainingToRemove -= InventoryAggregate.RemoveItemsOfType(remainingToRemove, item);
+
+                MyFixedPoint remainingToRemove = toRemove.Get(item);
+                Log.Trace(String.Format("Looking to remove: {0} of {1}", remainingToRemove, item), "Consume");
+          
+                foreach (var inventory in inventories) {
                     if (remainingToRemove <= 0) break;
              
-                    MyFixedPoint amountAvailable = inventory.GetItemAmount(itemToRemove);
+                    MyFixedPoint amountAvailable = inventory.GetItemAmount(item);
                     if (amountAvailable <= 0) continue;
 
                     MyFixedPoint amountRemoved = amountAvailable < remainingToRemove ? 
@@ -198,12 +220,11 @@ namespace SEGarden.World.Inventory {
 
                     Log.Trace(String.Format("Removing: {0} from {1}", amountRemoved, inventory.Entity.EntityId), "Consume");
                     SkipNextNotify = true;
-                    inventory.RemoveItemsOfType(amountRemoved, itemToRemove);
-                    //inventory.ConsumeItem(itemToRemove, amountRemoved);
+                    inventory.RemoveItemsOfType(amountRemoved, item);
                     remainingToRemove -= amountRemoved;
                 }
 
-                toRemove.Set(itemToRemove, remainingToRemove);
+                toRemove.Set(item, remainingToRemove);
             }
 
             Log.Trace(String.Format("Remaining after attempted removals: {0}", toRemove.ToString()), "Consume");
