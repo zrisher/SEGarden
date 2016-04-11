@@ -15,6 +15,8 @@ namespace SEGarden.Logging
 	/// </remarks>
 	public class Logger { //: VRage.Game.MySessionComponentBase {
 
+
+
         #region Static
 
         // Anyone can change this to set the logging level
@@ -172,6 +174,18 @@ namespace SEGarden.Logging
 
             GardenGateway.Files.writeLine(StringCache.ToString(), FileName); 
             StringCache.Clear();
+
+            if (ModInfo.DebugMode && 
+                level == Severity.Level.Warning || 
+                level == Severity.Level.Error || 
+                level == Severity.Level.Fatal) {
+                new Notifications.AlertNotification {
+                    Text = String.Format("{0} in {1} - {2}", 
+                        level, ClassName, InstanceName),
+                    Color = VRage.Game.MyFontEnum.Red,
+                    DisplaySeconds = 3
+                }.Raise();
+            }
 		}
 
 		private void appendWithBrackets(String append)

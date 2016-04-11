@@ -13,12 +13,12 @@ namespace SEGarden.Threading {
     /// https://github.com/Rynchodon/Autopilot
     /// </summary>
     public class LockedQueue<T> {
-        private MyQueue<T> Queue;
+        private readonly MyQueue<T> Queue;
         private readonly FastResourceLock lock_Queue = new FastResourceLock();
 
         public LockedQueue(IEnumerable<T> collection) { Queue = new MyQueue<T>(collection); }
 
-        public LockedQueue(int capacity) { Queue = new MyQueue<T>(capacity); }
+        public LockedQueue(int capacity = 1) { Queue = new MyQueue<T>(capacity); }
 
         public int Count {
             get {
@@ -40,12 +40,18 @@ namespace SEGarden.Threading {
 
         public void Clear() {
             using (lock_Queue.AcquireExclusiveUsing())
-                Queue = new MyQueue<T>(Queue.Count);
+                Queue.Clear();
         }
 
-        public T Dequeue() {
+        public bool TryDequeue(out T value) {
             using (lock_Queue.AcquireExclusiveUsing())
-                return Queue.Dequeue();
+                if (Queue.Count != 0) {
+                    value = Queue.Dequeue();
+                    return true;
+                }
+
+            value = default(T);
+            return false;
         }
 
         public void Enqueue(T item) {
@@ -53,9 +59,15 @@ namespace SEGarden.Threading {
                 Queue.Enqueue(item);
         }
 
-        public T Peek() {
+        public bool TryPeek(out T value) {
             using (lock_Queue.AcquireSharedUsing())
-                return Queue.Peek();
+                if (Queue.Count != 0) {
+                    value = Queue.Peek();
+                    return true;
+                }
+
+            value = default(T);
+            return false;
         }
 
         public void TrimExcess() {
@@ -74,7 +86,5 @@ namespace SEGarden.Threading {
                 for (int i = 0; i < Queue.Count; i++)
                     invoke(Queue[i]);
         }
-
     }
-
 }

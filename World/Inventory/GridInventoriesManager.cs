@@ -139,6 +139,7 @@ namespace SEGarden.World.Inventory {
         private void OnContentsChanged(MyInventoryBase inventory) {
             Log.Trace("Updating inventory cache with inventory " + inventory.Entity.ToString(), "OnContentsChanged");
           
+            ItemCountsAggregate cachedCount;
             if (!InventoryTotals.TryGetValue(inventory, out cachedCount)) {
                 Log.Error("Received an update for inventory we're not tracking.", "UpdateInventory");
                 return;
@@ -167,7 +168,7 @@ namespace SEGarden.World.Inventory {
                 NotifyContentsChanged(cachedCount - originalCounts);
             }
   
-            DebugPrint();
+            //DebugPrint();
         }
 
         private void DebugPrint() {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DEBUG // remove on build
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,6 +54,8 @@ namespace SEGarden {
         /// This only needs to be called from ComponentManager
         /// </summary>
         public override void Initialize() {
+            SetDebugConditional();
+
             RunningOn = CurrentLocation;
 
             Files = new FileManager(); 
@@ -79,6 +83,9 @@ namespace SEGarden {
             Files.Terminate();  // logging depends on this
             base.Terminate();
         }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        private static void SetDebugConditional() { ModInfo.DebugMode = true; }
 
     }
 }

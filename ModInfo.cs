@@ -9,5 +9,7 @@ namespace SEGarden {
 
         public const String Version = "0.9.2";
 
+        public static bool DebugMode;
+
     }
 }

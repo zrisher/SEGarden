@@ -4,6 +4,7 @@ using System.Linq;
 
 using Sandbox.ModAPI;
 
+using VRage.Collections;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
@@ -61,8 +62,8 @@ namespace SEGarden.Logic {
         private static UpdateManager Instance;
 
         // Holds work to be done from public methods called outside of our update
-        private static LockedQueue<Action> UpdateActions =
-            new LockedQueue<Action>(8);
+        private static MyConcurrentQueue<Action> UpdateActions =
+            new MyConcurrentQueue<Action>(8);
 
         // Definitely looking for a better way to do this
         private static bool SEGardenAdded = false;
@@ -486,7 +487,7 @@ namespace SEGarden.Logic {
         private void Entities_OnEntityAdd(IMyEntity entity) {
             //Log.Trace("Entity " + entity.EntityId + " added to game", "Entities_OnEntityAdd");
             //.Save helps us sort out all the stuff that doesn't have OBs, like bullets
-            if (entity.Save) {
+            if (entity.Save && !entity.Transparent) {
                 UpdateActions.Enqueue(() => {
                     //Log.Trace("Registering entity from OnEntityAdded", "action");
                     RunAllEntityComponentConstructorsOnAdded(entity);
@@ -563,7 +564,9 @@ namespace SEGarden.Logic {
             if (UpdateActions.Count > 0) {
                 Log.Debug("Running " + UpdateActions.Count + " update actions", "Update");
                 try {
-                    UpdateActions.DequeueAll(action => action.Invoke());
+                    Action updateAction;
+                    while (UpdateActions.TryDequeue(out updateAction))
+                        updateAction.Invoke();
                 }
                 catch (Exception e) {
                     Log.Error("Exception in AddRemoveActions: " + e, "Update");

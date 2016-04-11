@@ -9,6 +9,12 @@ using VRage.Game.ModAPI;
 
 namespace SEGarden.Notifications {
 
+    /// <summary>
+    /// Notifications
+    /// </summary>
+    /// <remarks>
+    /// DON'T PUT LOGGING IN HERE! Used by Logger
+    /// </remarks>
     public abstract class Notification {
         //public NotificationType Type = NotificationType.None;
         public String Text;
