@@ -28,9 +28,12 @@ namespace SEGarden.Chat.Commands {
             String longInfo,
             RunLogic logic,
             List<String> argNames = null,
-            int security = 0
+            int security = 0,
+            String alias = null,
+            String subdomainTitle = null
             )
-            : base(word, shortInfo, longInfo, security) {
+            : base(word, shortInfo, longInfo, security, alias, 
+            subdomainTitle) {
 
             //Log.Trace("Running constructor for command", "ctr");
             if (argNames == null) argNames = new List<String>();
@@ -64,8 +67,8 @@ namespace SEGarden.Chat.Commands {
             InfoAsChild = fullCommandWithArgs + " - " + ShortInfo;
             InfoNotice = new WindowNotification() {
                 Text = InfoAsTop,
-                BigLabel = "Command Usage Info",
-                SmallLabel = FullCommand
+                BigLabel = BigLabel,
+                SmallLabel = SmallLabel
             };
 
             ArgsErrorNotice = new ChatNotification() {

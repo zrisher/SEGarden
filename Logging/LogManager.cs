@@ -6,6 +6,7 @@ using System.Text;
 using SEGarden.Logic;
 
 namespace SEGarden.Logging {
+
     class LogManager : SessionComponent {
 
         public override void Initialize() {

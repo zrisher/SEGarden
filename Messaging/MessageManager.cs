@@ -78,7 +78,7 @@ namespace SEGarden.Messaging {
                     "RegisterHandler");
                 return;
             }
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(domainId, handler.ReceiveBytes);
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(domainId, handler.ReceiveBytes);
             RegisteredHandlers.Add(domainId, handler);
             Log.Trace("Registered message handler for Id " + domainId, "RegisterHandler");
         }

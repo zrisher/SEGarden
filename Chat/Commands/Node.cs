@@ -46,6 +46,7 @@ namespace SEGarden.Chat.Commands {
         public String FullCommand { get; private set; }
         public int Security { get; private set; }
         public String DomainTitle { get; private set; }
+        public String SubdomainTitle { get; private set; }
 
         public Node Parent;
         public String InfoAsChild; //{ get; protected set; }
@@ -55,6 +56,22 @@ namespace SEGarden.Chat.Commands {
             Sender = "Server",
             Text = "Command not ready."
         };
+
+        protected String BigLabel {
+            get {
+                if (DomainTitle != null) return DomainTitle;
+                if (Parent != null) return Parent.BigLabel;
+                return "Chat Commands";
+            }
+        }
+
+        protected String SmallLabel {
+            get {
+                if (SubdomainTitle != null) return SubdomainTitle;
+                return FullCommand;
+            }
+        }
+
         //protected Notification BadUsageNotice;
 
     /*
@@ -73,13 +90,15 @@ namespace SEGarden.Chat.Commands {
             String longInfo = "",
             int security = 0,
             String alias = null,
-            String domainTitle = "Chat Commands") {
+            String subdomainTitle = null,
+            String domainTitle = null) {
 
             Word = word;
             Alias = alias;
             ShortInfo = shortInfo;
             LongInfoString = longInfo;
             Security = security;
+            SubdomainTitle = subdomainTitle;
             DomainTitle = domainTitle;
         }
 
@@ -89,13 +108,15 @@ namespace SEGarden.Chat.Commands {
             Func<String> longInfo,
             int security = 0,
             String alias = null,
-            String domainTitle = "Chat Commands") {
+            String subdomainTitle = null,
+            String domainTitle = null) {
 
             Word = word;
             Alias = alias;
             ShortInfo = shortInfo;
             LongInfoFunc = longInfo;
             Security = security;
+            SubdomainTitle = subdomainTitle;
             DomainTitle = domainTitle;
         }
 

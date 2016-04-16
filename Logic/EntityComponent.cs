@@ -37,6 +37,7 @@ namespace SEGarden.Logic {
         public override void Initialize() {
             //Log.Trace("Initialize entity component abstract", "Initialize");
             Entity.OnMarkForClose += OnClose; // should we use closing or close instead?
+            Entity.OnClose += OnClose; // should we use closing or close instead?
             base.Initialize();
         }
 
@@ -52,6 +53,7 @@ namespace SEGarden.Logic {
         public override void Terminate() {
             //Log.Trace("Terminate entity component abstract", "Terminate");
             Entity.OnMarkForClose -= OnClose;
+            Entity.OnClose -= OnClose;
             base.Terminate();
         }
 
