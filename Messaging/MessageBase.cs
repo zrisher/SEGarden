@@ -13,7 +13,8 @@ using SEGarden.Extensions;
 using SEGarden.Logging;
 
 namespace SEGarden.Messaging {
-    abstract class MessageBase {
+
+    public abstract class MessageBase {
 
         private static Logger Log = new Logger("SEGarden.Messaging.MessageBase");
 
@@ -55,8 +56,8 @@ namespace SEGarden.Messaging {
                 Body = ToBytes(),
                 DestinationId = destSteamId,
                 DestinationType = destType,
-                MessageDomainId = _DomainId,
-                MessageTypeId = _TypeId,
+                DomainId = _DomainId,
+                TypeId = _TypeId,
                 Reliable = _Reliable
             };
 

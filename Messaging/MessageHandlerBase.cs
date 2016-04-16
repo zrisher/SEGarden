@@ -20,6 +20,8 @@ namespace SEGarden.Messaging {
 
         public MessageHandlerBase(ushort messageDomainId) {
             //MessageDomainId = messageDomainId;
+            Log.Trace("Constructing MessageHandlerBase", "ctr");
+            Log.Trace("messageDomainId: " + messageDomainId.ToString(), "ctr");
             SEGarden.GardenGateway.Messages.AddHandler(messageDomainId, this);
         }
 
@@ -43,7 +45,7 @@ namespace SEGarden.Messaging {
 
             try {
                 // Call internal handler
-                HandleMessage(container.MessageTypeId, container.Body,
+                HandleMessage(container.TypeId, container.Body,
                     container.SourceId, container.SourceType);
             }
             catch (Exception e) {

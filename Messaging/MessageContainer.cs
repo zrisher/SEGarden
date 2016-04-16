@@ -35,7 +35,7 @@ namespace SEGarden.Messaging {
             VRage.ByteStream stream = new VRage.ByteStream(buffer, buffer.Length);
 
             MessageContainer message = new MessageContainer();
-            message.MessageTypeId = stream.getUShort();
+            message.TypeId = stream.getUShort();
             //Log.Trace("Deserialized MessageTypeId " + message.MessageTypeId, "ToBytes");
             message.SourceId = stream.getUlong();
             //Log.Trace("Deserialized SourceId " + message.SourceId, "ToBytes");
@@ -53,13 +53,13 @@ namespace SEGarden.Messaging {
         #region Instance
 
         // Included in message:
-        public ushort MessageTypeId; // { get; private set; }
+        public ushort TypeId; // { get; private set; }
 		public ulong SourceId { get; private set; }
         public RunLocation SourceType { get; private set; }
         public byte[] Body;
 
         // Just used for sending:
-        public ushort MessageDomainId;
+        public ushort DomainId;
         public ulong DestinationId; // { get; private set; }
         public MessageDestinationType DestinationType; //{ get; private set; }
         public bool Reliable = true; // { get; protected set; }
@@ -69,7 +69,7 @@ namespace SEGarden.Messaging {
                 new VRage.ByteStream(HEADER_SIZE + Body.Length, true);
 
             //Log.Trace("Serializing MessageTypeId " + MessageTypeId, "ToBytes");
-            stream.addUShort(MessageTypeId);
+            stream.addUShort(TypeId);
             //Log.Trace("Serializing SourceId " + SourceId, "ToBytes");
             stream.addUlong(SourceId);
             //Log.Trace("Serializing SourceTypeID " + (ushort)SourceType, "ToBytes");
@@ -104,19 +104,19 @@ namespace SEGarden.Messaging {
                 case MessageDestinationType.Server:
                     //Log.Info("Sending to server " + DestinationId, "SendMessage");
                     MyAPIGateway.Multiplayer.SendMessageToServer(
-                        MessageDomainId, buffer, Reliable);
+                        DomainId, buffer, Reliable);
                     break;
 
                 case MessageDestinationType.Player:
                     //Log.Info("Sending to player " + DestinationId, "SendMessage");
                     MyAPIGateway.Multiplayer.SendMessageTo(
-                        MessageDomainId, buffer, DestinationId, Reliable);
+                        DomainId, buffer, DestinationId, Reliable);
                         //Log.Info("Sent message to player " + DestinationId, "SendMessage");
                     break;
 
                 case MessageDestinationType.All:
                     MyAPIGateway.Multiplayer.SendMessageToOthers(
-                        MessageDomainId, buffer, Reliable);
+                        DomainId, buffer, Reliable);
                     break;
             }
 
