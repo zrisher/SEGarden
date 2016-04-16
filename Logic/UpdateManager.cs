@@ -58,7 +58,7 @@ namespace SEGarden.Logic {
         #endregion
         #region Static Fields
 
-        private static Logger Log = new Logger("UpdateManager");
+        private static Logger Log = new Logger("SEGarden.Logic.UpdateManager");
         private static UpdateManager Instance;
 
         // Holds work to be done from public methods called outside of our update
