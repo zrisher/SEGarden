@@ -35,6 +35,7 @@ namespace SEGarden.Messaging {
             VRage.ByteStream stream = new VRage.ByteStream(buffer, buffer.Length);
 
             MessageContainer message = new MessageContainer();
+            message.DomainId = stream.getUShort();
             message.TypeId = stream.getUShort();
             //Log.Trace("Deserialized MessageTypeId " + message.MessageTypeId, "ToBytes");
             message.SourceId = stream.getUlong();
@@ -68,6 +69,7 @@ namespace SEGarden.Messaging {
             VRage.ByteStream stream = 
                 new VRage.ByteStream(HEADER_SIZE + Body.Length, true);
 
+            stream.addUShort(DomainId);
             //Log.Trace("Serializing MessageTypeId " + MessageTypeId, "ToBytes");
             stream.addUShort(TypeId);
             //Log.Trace("Serializing SourceId " + SourceId, "ToBytes");

@@ -31,6 +31,9 @@ namespace SEGarden.Messaging {
             _DomainId = domainId;
             _TypeId = typeId;
             _Reliable = reliable;
+
+            //Log.Trace("Constructed message base with domain " + _DomainId +
+            //    " and type " + _TypeId, "Send");
         }
         
         protected abstract byte[] ToBytes();
@@ -49,8 +52,8 @@ namespace SEGarden.Messaging {
 
         public void Send(ulong destSteamId, MessageDestinationType destType) {
 
-            //Log.Trace("Sending message with domain " + _DomainId + 
-            //    " and type " + _TypeId, "Send");
+            Log.Trace("Sending message with domain " + _DomainId + 
+                " and type " + _TypeId, "Send");
 
             MessageContainer container = new MessageContainer() {
                 Body = ToBytes(),

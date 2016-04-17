@@ -25,7 +25,7 @@ namespace SEGarden.Messaging {
 
         private RunStatus Status = RunStatus.NotInitialized;
 
-        public virtual void Initialize() {
+        internal void Initialize() {
             switch (Status) {
                 case RunStatus.NotInitialized:
                     Log.Trace("Initializing Message Manager", "Initialize");
@@ -41,7 +41,7 @@ namespace SEGarden.Messaging {
             }
         }
 
-        public virtual void Terminate() {
+        internal void Terminate() {
             switch (Status) {
                 case RunStatus.Running:
                     Log.Trace("Terminating Message Manager", "Terminate");

@@ -24,9 +24,9 @@ namespace SEGarden.Messaging {
     /// Registering a new message handler when receiving a message
     /// WILL CREATE A DEADLOCK
     /// </remarks>
-    public class MessageManagerTwo {
+    public class MessageHandler {
 
-        static Logger Log = new Logger("SEGarden.Messaging.MessageManagerTwo");
+        static Logger Log = new Logger("SEGarden.Messaging.MessageHandler");
 
         readonly FastResourceLock Lock = new FastResourceLock();
 
@@ -210,12 +210,12 @@ namespace SEGarden.Messaging {
         private void TryHandleMessage(byte[] bytes) {
             try { HandleMessage(bytes); }
             catch (Exception e) {
-                Log.Error("Error handling message: " + e, "ReceiveBytes");
+                Log.Error("Error handling message: " + e, "TryHandleMessage");
             }
         }
 
         private void HandleMessage(byte[] bytes) {
-            Log.Info("Got message of size " + bytes.Length, "ReceiveBytes");
+            Log.Info("Got message of size " + bytes.Length, "HandleMessage");
 
             // Deserialize base message
             MessageContainer container = MessageContainer.FromBytes(bytes);
@@ -226,18 +226,21 @@ namespace SEGarden.Messaging {
                 if (!Handlers.TryGetValue(container.DomainId, out handlersByType)) {
                     Log.Error("Failed to find handler for domain " + 
                         container.DomainId, "HandleMessage");
+                    return;
                 }
 
                 List<Action<MessageBase>> handlers;
                 if (!handlersByType.TryGetValue(container.TypeId, out handlers)) {
                     Log.Error("Failed to find handler for type " + 
                         container.TypeId, "HandleMessage");
+                    return;
                 }
 
                 Func<Byte[],MessageBase> ctr;
                 if (!Constructors.TryGetValue(container.TypeId, out ctr)) {
                     Log.Error("Failed to find constructor for type " + 
                         container.TypeId, "HandleMessage");
+                    return;
                 }
 
                 MessageBase msg = ctr(container.Body);
