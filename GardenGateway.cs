@@ -47,7 +47,6 @@ namespace SEGarden {
         public static FileManager Files { get; private set; }
         public static ChatManager Commands { get; private set; }
         public static MessageManager Messages { get; private set; }
-        public static MessageHandler Handler { get; private set; }
 
         public static RunLocation RunningOn { get; private set; }
 
@@ -70,11 +69,6 @@ namespace SEGarden {
             Messages = new MessageManager();
             Messages.Initialize();
 
-            Log.Trace("Initializing MessageHandler", "");
-            Handler = new MessageHandler();
-            Handler.Initialize();
-            Log.Trace("Finished Initializing MessageHandler", "");
-
             base.Initialize();
         }
 
@@ -85,7 +79,6 @@ namespace SEGarden {
         public override void Terminate() {
             Log.Info("Stopping SE Garden.", "");
             Commands.Terminate();
-            Handler.Terminate();
             Messages.Terminate();
             Files.Terminate();  // logging depends on this
             base.Terminate();

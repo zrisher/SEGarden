@@ -6,31 +6,45 @@ using System.Linq;
 
 using Sandbox.ModAPI;
 
+using VRage;
+using VRage.Collections;
+
 //using SEGarden.Core;
 using SEGarden.Logging;
 using SEGarden.Logic;
 
+using SEGarden.Exceptions;
+
 namespace SEGarden.Messaging {
 
-
+    /// <summary>
+    /// Keeps track of message handlers and constructors to allow them to be 
+    /// defined in arbitrary places within your code.
+    /// </summary>
+    /// <remarks>
+    /// Registering a new message handler or constructor inside another
+    /// message handler or constructor WILL CREATE A DEADLOCK
+    /// </remarks>
     public class MessageManager {
 
-        private static Logger Log = new Logger("SEGarden.Messaging.MessageManager");
+        static Logger Log = new Logger("SEGarden.Messaging.MessageManager");
 
-        private Dictionary<ushort, MessageHandlerBase> RegisteredHandlers = 
-            new Dictionary<ushort, MessageHandlerBase>();
+        readonly FastResourceLock Lock = new FastResourceLock();
 
-        private Dictionary<ushort, MessageHandlerBase> HandlersToRegister =
-            new Dictionary<ushort, MessageHandlerBase>();
+        readonly Dictionary<ushort, Func<Byte[], MessageBase>> Constructors =
+            new Dictionary<ushort, Func<Byte[], MessageBase>>();
 
-        private RunStatus Status = RunStatus.NotInitialized;
+        readonly Dictionary<ushort, Dictionary<ushort, List<Action<MessageBase>>>> Handlers =
+            new Dictionary<ushort, Dictionary<ushort, List<Action<MessageBase>>>>();
 
-        internal void Initialize() {
+        RunStatus Status = RunStatus.NotInitialized;
+
+        public virtual void Initialize() {
             switch (Status) {
                 case RunStatus.NotInitialized:
                     Log.Trace("Initializing Message Manager", "Initialize");
+                    RegisterForDelayedDomains();
                     Status = RunStatus.Running;
-                    RegisterHandlersFromQueue();
                     break;
                 case RunStatus.Running:
                     Log.Warning("Already initialized", "Initialize");
@@ -41,11 +55,11 @@ namespace SEGarden.Messaging {
             }
         }
 
-        internal void Terminate() {
+        public virtual void Terminate() {
             switch (Status) {
                 case RunStatus.Running:
                     Log.Trace("Terminating Message Manager", "Terminate");
-                    UnregisterHandlers();
+                    UnregisterAll();
                     Status = RunStatus.Terminated;
                     break;
                 case RunStatus.NotInitialized:
@@ -57,64 +71,189 @@ namespace SEGarden.Messaging {
             }
         }
 
-        public void AddHandler(ushort messageId, MessageHandlerBase handler) {
-            Log.Trace("Adding handler for " + messageId, "AddHandler");
-            switch (Status) {
-                case (RunStatus.Running):
-                    RegisterHandler(messageId, handler);
-                    break;
-                case (RunStatus.NotInitialized):
-                    QueueHandler(messageId, handler);
-                    break;
-                case (RunStatus.Terminated):
-                    Log.Error("Terminated, can't add handler for MessageId " + messageId, "AddHandler");
-                    break;
+        /// <summary>
+        /// Provide MessageManager with a deserializing constructor for a 
+        /// message inheriting from MessageBase
+        /// </summary>
+        public void AddConstructor(
+            ushort messageTypeId, Func<Byte[], MessageBase> constructor
+        ) {
+            if (constructor == null)
+                throw new ArgumentException("null constructor");
+
+            if (Status == RunStatus.Terminated)
+                throw new InvalidOperationException("Manager not running");
+
+            using (Lock.AcquireExclusiveUsing()) {
+                if (Constructors.ContainsKey(messageTypeId))
+                    throw new InvalidOperationException(
+                        "Received second constructor for messageType " +
+                        messageTypeId);
+                else
+                    Constructors[messageTypeId] = constructor;
+            }
+
+            Log.Trace("Registered constructor for messageType " +
+                messageTypeId, "RegisterHandler");
+        }
+
+        /// <summary>
+        /// Register any message-handling action for a particular domain and
+        /// message type. Constructors for the type must be already registered.
+        /// </summary>
+        public void AddHandler(
+            ushort domainId, ushort messageTypeId, Action<MessageBase> handler
+        ) {
+            if (handler == null)
+                throw new ArgumentException("null handler");
+
+            if (Status == RunStatus.Terminated)
+                throw new InvalidOperationException("Manager not running");
+
+            using (Lock.AcquireExclusiveUsing()) {
+                if (!Constructors.ContainsKey(messageTypeId))
+                    throw new ArgumentException("No ctr for message type");
+
+                if (!Handlers.ContainsKey(domainId)) {
+                    Handlers[domainId] =
+                        new Dictionary<ushort, List<Action<MessageBase>>>();
+
+                    // wait to actually register domain with MyAPIGateway if
+                    // it's not ready yet (i.e. we're not initialized)
+                    if (Status == RunStatus.Running) {
+                        MyAPIGateway.Multiplayer.RegisterMessageHandler(
+                            domainId, TryHandleMessage
+                        );
+                    }
+                }
+
+                if (!Handlers[domainId].ContainsKey(messageTypeId)) {
+                    Handlers[domainId][messageTypeId] =
+                        new List<Action<MessageBase>>();
+                }
+
+                Handlers[domainId][messageTypeId].Add(handler);
+            }
+            
+            Log.Trace("Registered handler for message " + messageTypeId +
+                " in domain " + domainId, "AddHandler");
+        }
+
+        /// <summary>
+        /// Deregister any message-handling action for a particular domain and
+        /// message type.
+        /// </summary>
+        public void RemoveHandler(
+            ushort domainId, ushort messageTypeId, Action<MessageBase> handler
+        ) {
+            if (handler == null)
+                throw new ArgumentException("null handler");
+
+            if (Status == RunStatus.Terminated)
+                throw new InvalidOperationException("Manager not running");
+
+            using (Lock.AcquireExclusiveUsing()) {
+                // bubble up key errors
+                Handlers[domainId][messageTypeId].Remove(handler);
+
+                if (Handlers[domainId][messageTypeId].Count == 0) {
+                    Handlers[domainId].Remove(messageTypeId);
+                }
+
+                if (Handlers[domainId].Keys.Count == 0) {
+                    Handlers.Remove(domainId);
+
+                    if (Status == RunStatus.Running) {
+                        MyAPIGateway.Multiplayer.UnregisterMessageHandler(
+                            domainId, TryHandleMessage
+                        );
+                    }
+                }
+            }
+
+            Log.Trace("Unregistered handler for message " + messageTypeId +
+                " in domain {1}" + domainId, "RemoveHandler");
+        }
+
+        /// <summary>
+        /// Registers the arbitrary handler with SE for all domains that were 
+        /// registered with MessageManager before we init'd. 
+        /// See the note in AddHandler.
+        /// </summary>
+        private void RegisterForDelayedDomains() {
+            using (Lock.AcquireSharedUsing()) {
+                foreach (var domainId in Handlers.Keys) {
+                    MyAPIGateway.Multiplayer.RegisterMessageHandler(
+                        domainId, TryHandleMessage
+                    );
+                }
+            }
+        }
+        
+        private void UnregisterAll() {
+            Log.Trace("Unregistering message handlers", "UnregisterAll");
+            using (Lock.AcquireExclusiveUsing()) {
+                foreach (var domainId in Handlers.Keys) {
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(
+                        domainId, TryHandleMessage
+                    );
+                }
+
+                Constructors.Clear();
+                Handlers.Clear();
+            }
+        }
+        
+        ///<remarks>
+        /// We wrap the whole message handling in a try-catch, just like every
+        /// other entry point to SEGarden-run logic. Let's not crash the game.
+        ///</remarks>
+        private void TryHandleMessage(byte[] bytes) {
+            try { HandleMessage(bytes); }
+            catch (Exception e) {
+                Log.Error("Error handling message: " + e, "TryHandleMessage");
             }
         }
 
-        private void RegisterHandler(ushort domainId, MessageHandlerBase handler) {
-            if (RegisteredHandlers.ContainsKey(domainId)) {
-                Log.Error("Cannot register another handler for message domain " + domainId,
-                    "RegisterHandler");
-                return;
+        private void HandleMessage(byte[] bytes) {
+            Log.Info("Got message of size " + bytes.Length, "HandleMessage");
+
+            // Deserialize base message
+            MessageContainer container = MessageContainer.FromBytes(bytes);
+
+            using (Lock.AcquireSharedUsing()) {
+
+                Dictionary<ushort,List<Action<MessageBase>>> handlersByType;
+                if (!Handlers.TryGetValue(container.DomainId, out handlersByType)) {
+                    Log.Error("Failed to find handler for domain " + 
+                        container.DomainId, "HandleMessage");
+                    return;
+                }
+
+                List<Action<MessageBase>> handlers;
+                if (!handlersByType.TryGetValue(container.TypeId, out handlers)) {
+                    Log.Error("Failed to find handler for type " + 
+                        container.TypeId, "HandleMessage");
+                    return;
+                }
+
+                Func<Byte[],MessageBase> ctr;
+                if (!Constructors.TryGetValue(container.TypeId, out ctr)) {
+                    Log.Error("Failed to find constructor for type " + 
+                        container.TypeId, "HandleMessage");
+                    return;
+                }
+
+                MessageBase msg = ctr(container.Body);
+
+                // should we have another try-catch so individual handlers 
+                // don't trip up others?
+                foreach(var handler in handlers) {
+                    handler(msg);
+                }
             }
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(domainId, handler.ReceiveBytes);
-            RegisteredHandlers.Add(domainId, handler);
-            Log.Trace("Registered message handler for Id " + domainId, "RegisterHandler");
-        }
-
-        private void QueueHandler(ushort messageId, MessageHandlerBase handler) {
-            HandlersToRegister.Add(messageId, handler);
-            Log.Info("Queued message handler for Id " + messageId, "QueueHandler");
-        }
-
-        private void RegisterHandlersFromQueue() {
-            if (HandlersToRegister.Count < 1) return;
-
-            Log.Trace("Registering " + HandlersToRegister.Count + 
-                " Queued message handlers", "RegisterHandlersFromQueue");
-
-            foreach (KeyValuePair<ushort, MessageHandlerBase> kvp in HandlersToRegister) {
-                RegisterHandler(kvp.Key, kvp.Value);
-            }
-
-            HandlersToRegister.Clear();
-        }
-
-        private void UnregisterHandlers() {
-            if (RegisteredHandlers.Count < 1) return;
-
-            Log.Trace("Unregistering " + RegisteredHandlers.Count +
-                " message handlers", "UnregisterHandlers");
-
-            foreach (KeyValuePair<ushort, MessageHandlerBase> kvp in RegisteredHandlers) {
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(kvp.Key, kvp.Value.ReceiveBytes);
-            }
-
-            RegisteredHandlers.Clear();
         }
 
     }
 
 }
-

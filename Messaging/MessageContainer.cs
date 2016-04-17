@@ -101,6 +101,8 @@ namespace SEGarden.Messaging {
 
             //Log.Trace("DestinationType : " + DestinationType, "Send");
 
+            Log.Info("Sending packet of " + buffer.Length + " bytes", "SendMessage");
+
             switch (DestinationType) {
 
                 case MessageDestinationType.Server:
@@ -121,8 +123,6 @@ namespace SEGarden.Messaging {
                         DomainId, buffer, Reliable);
                     break;
             }
-
-            Log.Info("Sent packet of " + buffer.Length + " bytes", "SendMessage");
         }
 
         #endregion

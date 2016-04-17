@@ -14,6 +14,7 @@ using VRage.Game.ModAPI; // from VRage.Game.dll
 using VRage.ModAPI; // from VRage.Game.dll
 using VRage.ObjectBuilders;
 
+using SEGarden.Definitions;
 using SEGarden.Logging;
 
 namespace SEGarden.World.Inventory {
@@ -97,6 +98,13 @@ namespace SEGarden.World.Inventory {
             Counts = counts;
         }
 
+        public ItemCountsAggregate(ItemCountAggregateDefinition definition) {
+            foreach (var countDef in definition.Counts) {
+                var a = new PhysicalItem(countDef.TypeName, countDef.SubtypeName);
+                this.Set(a.DefinitionId, (MyFixedPoint)countDef.Count);
+            }
+        }
+
         /*
         public void SetCount(MyDefinitionId defId, MyFixedPoint count) {
             Counts[defId] = count;
@@ -140,6 +148,21 @@ namespace SEGarden.World.Inventory {
                 result.Set(kvp.Key, kvp.Value);
 
             //Log.Trace("Returning result", "Copy");
+            return result;
+        }
+
+        public ItemCountAggregateDefinition GetDefinition() {
+            var result = new ItemCountAggregateDefinition();
+
+            foreach (var kvp in Counts) {
+                if (kvp.Value <= 0) continue;
+                var item = new PhysicalItem(kvp.Key);
+                var countDef = new ItemCountDefinition(
+                    item.TypeName, item.SubtypeName, (double)kvp.Value
+                );
+                result.Counts.Add(countDef);
+            }
+        
             return result;
         }
 

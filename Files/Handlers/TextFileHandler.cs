@@ -9,6 +9,8 @@ namespace SEGarden.Files.Handlers {
 
     class TextFileHandler : FileHandlerBase {
 
+        static Logging.Logger Log = new Logging.Logger("TextFileHandler");
+
         private System.IO.TextReader TextReader;
         private System.IO.TextWriter TextWriter;
 
@@ -46,8 +48,11 @@ namespace SEGarden.Files.Handlers {
                 if (!LoadReader()) return;
             }
 
-            if (result is String)
+            if (result is String) {
                 result = (T)(object)TextReader.ReadToEnd();
+                Log.Trace("Successfully read result as " + result.ToString(), "Read");
+            }
+                
         }
 
 
@@ -91,9 +96,11 @@ namespace SEGarden.Files.Handlers {
                     TextReader = MyAPIGateway.Utilities.
                         ReadFileInLocalStorage(FileName, TypeForFolder);
 
+                Log.Trace("Successfully loaded reader.", "Read");
                 return true;
             }
-            catch {
+            catch (Exception e){
+                Log.Trace("Error loading reader: " + e, "Read");
                 return false;
             }
         }

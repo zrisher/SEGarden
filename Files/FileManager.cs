@@ -28,7 +28,9 @@ namespace SEGarden.Files {
   
         #region Static Fields
 
-        private readonly static string[] TextFileExtensions = { "txt", "log" };
+        private readonly static string[] TextFileExtensions = { 
+            "txt", "log", "xml" 
+        };
 
         // SE loads the storage path for file operations from a Mod's assembly
         private readonly static Type TypeForFolder = typeof(FileManager);
@@ -70,19 +72,19 @@ namespace SEGarden.Files {
                 return false;
             }
 
-            if (fileName == null || fileName.Length < 1) {
+            if (String.IsNullOrWhiteSpace(fileName)) {
                 Log.Error("Null or empty filename", "CanWriteStringToFile");
                 return false;
             }
 
-            // Note: SE silently fails on these
+            // Note: SE silently fails when filename has invalid chars
             int firstIllegalChar = fileName.IndexOfAny(Path.GetInvalidFileNameChars());
             if (firstIllegalChar >= 0) {
                 Log.Error("Illegal filename character at position " + firstIllegalChar, "CanWriteStringToFile");
                 return false;
             }
 
-            if (output == null || output.Length < 1) {
+            if (String.IsNullOrWhiteSpace(output)) {
                 Log.Warning("Null or empty output", "CanWriteStringToFile");
                 return false;
             }
@@ -93,6 +95,8 @@ namespace SEGarden.Files {
                 return false;
             }
 
+            Log.Trace("Can write.", "CanWriteStringToFile");
+            Log.Trace("ouput: " + output, "CanWriteStringToFile");
             return true;
         }
 
@@ -109,9 +113,18 @@ namespace SEGarden.Files {
         public void Read<T>(String fileName, ref T result) {
             //Log.Trace(String.Format("Read file \"{0}\"", fileName), "Read");
 
-            if (!Exists(fileName)) return;
+            if (!Exists(fileName)) {
+                Log.Trace("No file exists for " + fileName, "Read");
+                return;
+            }
+
             FileHandlerBase handler = getHandler(fileName);
-            if (handler != null) handler.Read<T>(ref result);
+            if (handler == null) {
+                Log.Trace("Unable to acquire handler for " + fileName, "Read");
+                return;
+            }
+                
+            handler.Read<T>(ref result);
         }
 
         public T ReadXML<T>(String fileName) {
@@ -124,8 +137,8 @@ namespace SEGarden.Files {
 
             String serialized = "";
             Read<String>(fileName, ref serialized);
-            if (serialized == null || serialized.Length < 1) {
-                Log.Error("Existing file blank", "ReadXML");
+            if (String.IsNullOrWhiteSpace(serialized)) {
+                Log.Error("Read string is blank", "ReadXML");
                 return default(T);
             }
 
@@ -138,21 +151,17 @@ namespace SEGarden.Files {
                 return false;
             }
 
-            if (fileName == null || fileName == "") {
-                Log.Error("No filename supplied.", "SaveGrids");
-                return false;
-            }
-
             Overwrite(
-                MyAPIGateway.Utilities.SerializeToXML<T>(serializable),
+                MyAPIGateway.Utilities.SerializeToXML<T>(serializable), 
                 fileName
             );
 
             if (!Exists(fileName)) {
-                Log.Error("Failed writing to file.", "SaveGrids");
+                Log.Error("Failed writing to file.", "WriteXML");
                 return false;
             }
 
+            Log.Trace("Successfully wrote XML to file.", "WriteXML");
             return true;
         }
 
@@ -186,8 +195,12 @@ namespace SEGarden.Files {
 
             DropHandler(filename);
 
-            if (MyAPIGateway.Utilities.FileExistsInLocalStorage(filename, TypeForFolder)) ;
-            MyAPIGateway.Utilities.DeleteFileInLocalStorage(filename, TypeForFolder);
+            if (MyAPIGateway.Utilities.FileExistsInLocalStorage(
+                filename, TypeForFolder
+            ))
+                MyAPIGateway.Utilities.DeleteFileInLocalStorage(
+                    filename, TypeForFolder
+                );
 
             return true;
         }
