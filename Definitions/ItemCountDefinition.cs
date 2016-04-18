@@ -43,6 +43,12 @@ namespace SEGarden.Definitions {
             Count = count;
         }
 
+        public ItemCountDefinition(ItemCount count) {
+            TypeName = count.Item.TypeName;
+            SubtypeName = count.Item.SubtypeName;
+            Count = (double)count.Amount;
+        }
+
         public override bool Validate() {
             bool result = true;
 
