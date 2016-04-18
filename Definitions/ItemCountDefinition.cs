@@ -4,20 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-using Sandbox.ModAPI;
-using VRage;
-using VRage.Game;
-
-using SEGarden.Logging;
-using SEGarden.World.Inventory;
-
 namespace SEGarden.Definitions {
 
     [XmlType("ItemCount")]
     public class ItemCountDefinition : DefinitionBase {
-
-        static readonly Logger Log = 
-            new Logger("SEGarden.Definitions.ItemCountDefinition");
 
         [XmlAttribute("Type")]
         public String TypeName;
@@ -33,53 +23,17 @@ namespace SEGarden.Definitions {
         [XmlAttribute("Count")]
         public double Count;
 
-        public ItemCountDefinition() { }
-
-        public ItemCountDefinition(
-            String typeName, String subtypeName, double count
-        ) {
-            TypeName = typeName;
-            SubtypeName = subtypeName;
-            Count = count;
+        protected override String ValidationName {
+            get { return "ItemCount"; }
         }
 
-        public ItemCountDefinition(ItemCount count) {
-            TypeName = count.Item.TypeName;
-            SubtypeName = count.Item.SubtypeName;
-            Count = (double)count.Amount;
-        }
-
-        public override bool Validate() {
-            bool result = true;
-
-            if (String.IsNullOrWhiteSpace(TypeName)) {
-                Log.Warning("TypeName cannot be blank.","Validate");
-                result = false;
-            }
-
-            if (String.IsNullOrWhiteSpace(SubtypeName)) {
-                Log.Warning("SubtypeName cannot be blank.","Validate");
-                result = false;
-            }
-
-            if (Count < 0) {
-                Log.Warning("Count cannot be less than zero.","Validate");
-                result = false;
-            }
-
-            /* Is it really necessary to test this? Assuredly the user will later
-             * if calling validate, and doing it at each level will replicate
-             * the check many times.
-            try {
-                MyAPIGateway.Utilities.SerializeToXML<ItemCountDefinition>(this);
-            }
-            catch (Exception e) {
-                Log.Warning("Failed serialization with error: " + e, "Validate");
-                result = false;
-            }
-            */
-
-            return result;
+        public override void Validate(ref List<ValidationError> errors) {
+            ErrorIf(String.IsNullOrWhiteSpace(TypeName),
+                "TypeName cannot be empty.", ref errors);
+            ErrorIf(String.IsNullOrWhiteSpace(SubtypeName),
+                "SubtypeName cannot be empty.", ref errors);
+            ErrorIf(Count < 0,
+                "Count cannot be < 0.", ref errors);
         }
 
     }

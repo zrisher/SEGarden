@@ -11,7 +11,7 @@ using VRage.ObjectBuilders;
 
 namespace SEGarden.World {
 
-    public class PhysicalItem {
+    public class PhysicalItemType {
 
         public readonly MyDefinitionBase Definition;
 
@@ -31,7 +31,7 @@ namespace SEGarden.World {
             get { return Definition.Id; }
         }
 
-        public PhysicalItem(String typeName, String subtypeName) {
+        public PhysicalItemType(String typeName, String subtypeName) {
             var builderType = MyObjectBuilderType.Parse(typeName);
             var definitionId = new MyDefinitionId(builderType, subtypeName);
             Definition = MyDefinitionManager.Static.GetDefinition(definitionId);
@@ -42,7 +42,7 @@ namespace SEGarden.World {
                 );
         }
 
-        public PhysicalItem(MyDefinitionId definitionId) {
+        public PhysicalItemType(MyDefinitionId definitionId) {
             Definition = MyDefinitionManager.Static.GetDefinition(definitionId);
 
             if (!(Definition is MyPhysicalItemDefinition))

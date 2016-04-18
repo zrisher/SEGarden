@@ -22,22 +22,24 @@ namespace SEGarden.World.Inventory {
     public class ItemCount {
 
         public readonly MyFixedPoint Amount;
-        public readonly PhysicalItem Item;
+        public readonly PhysicalItemType Item;
 
-        public ItemCount(MyFixedPoint amount, PhysicalItem item) {
+        public ItemCount(MyFixedPoint amount, PhysicalItemType item) {
             Amount = amount;
             Item = item;
         }
 
         public ItemCount(ItemCountDefinition definition) {
             Amount = (MyFixedPoint)definition.Count;
-            Item = new PhysicalItem(definition.TypeName, definition.SubtypeName);
+            Item = new PhysicalItemType(definition.TypeName, definition.SubtypeName);
         }
 
         public ItemCountDefinition GetDefinition() {
-            return new ItemCountDefinition(
-                Item.TypeName, Item.SubtypeName, (double)Amount
-            );
+            return new ItemCountDefinition() {
+                TypeName = Item.TypeName,
+                SubtypeName = Item.SubtypeName,
+                Count = (double)Amount
+            };
         }
 
     }

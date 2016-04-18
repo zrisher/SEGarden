@@ -56,7 +56,7 @@ namespace SEGarden.World.Inventory {
             return result;
         }
 
-        public static ItemCountsAggregate operator *(ItemCountsAggregate value1, float value2) {
+        public static ItemCountsAggregate operator *(ItemCountsAggregate value1, MyFixedPoint value2) {
             VRage.Exceptions.ThrowIf<ArgumentNullException>(value1 == null, "value1");
 
             //Log.Trace(String.Format("Calculating {0} * {1}", value1.ToString(), value2), "operator *");
@@ -70,6 +70,14 @@ namespace SEGarden.World.Inventory {
 
             //Log.Trace("Returning result", "operator *");
             return result;
+        }
+
+        public static ItemCountsAggregate operator *(ItemCountsAggregate value1, float value2) {
+            return value1 * (MyFixedPoint)value2;
+        }
+
+        public static ItemCountsAggregate operator *(ItemCountsAggregate value1, double value2) {
+            return value1 * (MyFixedPoint)value2;
         }
 
         public static ItemCountsAggregate operator /(ItemCountsAggregate value1, float value2) {
@@ -98,13 +106,30 @@ namespace SEGarden.World.Inventory {
             Counts = counts;
         }
 
+        public ItemCountsAggregate(ItemCount count) {
+            Set(count.Item.DefinitionId, count.Amount);
+        }
+
+        public ItemCountsAggregate(List<ItemCount> counts) {
+            foreach (var count in counts)
+                Set(count.Item.DefinitionId, count.Amount);
+        }
+
         public ItemCountsAggregate(ItemCountAggregateDefinition definition) {
             foreach (var countDef in definition.Counts) {
-                var a = new PhysicalItem(countDef.TypeName, countDef.SubtypeName);
+                var a = new PhysicalItemType(countDef.TypeName, countDef.SubtypeName);
                 this.Set(a.DefinitionId, (MyFixedPoint)countDef.Count);
             }
         }
 
+        public List<ItemCount> ToItemCounts() {
+            var result = new List<ItemCount>();
+            foreach (var kvp in Counts)
+                result.Add(
+                    new ItemCount(kvp.Value, new PhysicalItemType(kvp.Key))
+                );
+            return result;
+        }
         /*
         public void SetCount(MyDefinitionId defId, MyFixedPoint count) {
             Counts[defId] = count;
@@ -156,10 +181,12 @@ namespace SEGarden.World.Inventory {
 
             foreach (var kvp in Counts) {
                 if (kvp.Value <= 0) continue;
-                var item = new PhysicalItem(kvp.Key);
-                var countDef = new ItemCountDefinition(
-                    item.TypeName, item.SubtypeName, (double)kvp.Value
-                );
+                var item = new PhysicalItemType(kvp.Key);
+                var countDef = new ItemCountDefinition() {
+                    TypeName = item.TypeName,
+                    SubtypeName = item.SubtypeName,
+                    Count = (double)kvp.Value,
+                };
                 result.Counts.Add(countDef);
             }
         
