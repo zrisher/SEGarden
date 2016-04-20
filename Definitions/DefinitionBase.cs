@@ -10,9 +10,26 @@ namespace SEGarden.Definitions {
 
     public abstract class DefinitionBase {
 
+        static Logger Log = new Logger("SEGarden.Definitions.DefinitionBase");
+
         protected abstract String ValidationName { get; }
 
         public abstract void Validate(ref List<ValidationError> errors);
+
+        public bool ValidateAndLog() {
+            var validationErrors = new List<ValidationError>();
+            Validate(ref validationErrors);
+            if (validationErrors.Count > 0) {
+                foreach (var error in validationErrors) {
+                    Log.Error(
+                        "Validation error in " + error.Source + 
+                        " : " + error.Message, "Test"
+                    );
+                }
+                return false;
+            }
+            return true;
+        }
 
         protected void ErrorIf(
             bool condition, String msg, 

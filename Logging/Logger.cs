@@ -183,7 +183,7 @@ namespace SEGarden.Logging
                     Text = String.Format("{0} in {1} - {2}", 
                         level, ClassName, InstanceName),
                     Color = VRage.Game.MyFontEnum.Red,
-                    DisplaySeconds = 3
+                    DisplaySeconds = 5
                 }.Raise();
             }
 		}
