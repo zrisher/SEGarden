@@ -95,8 +95,8 @@ namespace SEGarden.Files {
                 return false;
             }
 
-            Log.Trace("Can write.", "CanWriteStringToFile");
-            Log.Trace("ouput: " + output, "CanWriteStringToFile");
+            //Log.Trace("Can write.", "CanWriteStringToFile");
+            //Log.Trace("ouput: " + output, "CanWriteStringToFile");
             return true;
         }
 

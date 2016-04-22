@@ -42,7 +42,7 @@ namespace SEGarden.Testing {
                 Test.Invoke(this);
             }
             catch (Exception e) {
-                FailureMessages.Add("Error - " + e.Message);
+                FailureMessages.Add("Error - " + e);
             }
 
             Passed = (FailureMessages.Count == 0);

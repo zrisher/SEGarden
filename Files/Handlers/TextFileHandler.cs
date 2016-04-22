@@ -50,7 +50,7 @@ namespace SEGarden.Files.Handlers {
 
             if (result is String) {
                 result = (T)(object)TextReader.ReadToEnd();
-                Log.Trace("Successfully read result as " + result.ToString(), "Read");
+                //Log.Trace("Successfully read result as " + result.ToString(), "Read");
             }
                 
         }
@@ -96,11 +96,11 @@ namespace SEGarden.Files.Handlers {
                     TextReader = MyAPIGateway.Utilities.
                         ReadFileInLocalStorage(FileName, TypeForFolder);
 
-                Log.Trace("Successfully loaded reader.", "Read");
+                //Log.Trace("Successfully loaded reader.", "Read");
                 return true;
             }
             catch (Exception e){
-                Log.Trace("Error loading reader: " + e, "Read");
+                Log.Error("Error loading reader: " + e, "Read");
                 return false;
             }
         }

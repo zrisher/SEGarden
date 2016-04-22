@@ -4,10 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
+using VRage;
+
+using SEGarden.Extensions;
+using SEGarden.Logging;
+
 namespace SEGarden.Definitions {
 
     [XmlType("ItemCount")]
     public class ItemCountDefinition : DefinitionBase {
+
+        //static Logger Log = new Logger("SEGarden.Definitions.ItemCountDefinition");
 
         [XmlAttribute("Type")]
         public String TypeName;
@@ -26,6 +33,31 @@ namespace SEGarden.Definitions {
         protected override String ValidationName {
             get { return "ItemCount"; }
         }
+
+        public ItemCountDefinition() { }
+
+        public ItemCountDefinition(ByteStream stream) {
+            if (stream == null) throw new ArgumentException("null stream");
+
+            
+            TypeName = stream.getString();
+            //Log.Trace(String.Format("deserialized TypeName \"{0}\"", TypeName), "ctr");
+            SubtypeName = stream.getString();
+            //Log.Trace(String.Format("deserialized SubtypeName \"{0}\"", SubtypeName), "ctr");
+            Count = stream.getDouble();
+            //Log.Trace(String.Format("deserialized Count \"{0}\"", Count), "ctr");
+        }
+
+         public void AddToByteSteam(ByteStream stream) {
+             if (stream == null) throw new ArgumentException("null stream");
+
+             //Log.Trace(String.Format("serializing TypeName \"{0}\"",TypeName), "AddToByteSteam");
+             stream.addString(TypeName);
+             //Log.Trace(String.Format("serializing SubtypeName \"{0}\"", SubtypeName), "AddToByteSteam");
+             stream.addString(SubtypeName);
+             //Log.Trace(String.Format("serializing Count \"{0}\"", Count), "AddToByteSteam");
+             stream.addDouble(Count);
+         }
 
         public override void Validate(ref List<ValidationError> errors) {
             ErrorIf(String.IsNullOrWhiteSpace(TypeName),

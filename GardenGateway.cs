@@ -11,6 +11,8 @@ using SEGarden.Messaging;
 
 using SEGarden.Logging;
 using SEGarden.Logic;
+using SEGarden.Testing;
+using SEGarden.Tests.Definitions;
 
 namespace SEGarden {
 
@@ -68,6 +70,14 @@ namespace SEGarden {
 
             Messages = new MessageManager();
             Messages.Initialize();
+
+            if (ModInfo.DebugMode) {
+                Specification.RunSpecTests(new List<Specification>() {
+                    new ItemCountAggregateDefinitionSpec(),
+                    new ItemCountDefinitionSpec()
+                }, 
+                "SEGarden");
+            }
 
             base.Initialize();
         }

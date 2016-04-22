@@ -22,33 +22,47 @@ namespace SEGarden.Testing {
         //      failed assertion - assertion message
         //      error - error message
         //     
-        public static bool RunSpecTests(List<Specification> specs) {
+        public static bool RunSpecTests(
+            List<Specification> specs, String domain = ""
+        ) {
             if (specs == null)
                 throw new ArgumentException("Provided specs are null");
 
             bool passing = true;
+            String specNames = String.Join(", ", specs.Select(x => x.Subject));
+            String logOut = "\r\nTest results:\r\n";
 
-            String logOut = "\r\n" + "Running Tests for " +
-                 String.Join(", ", specs.Select(x => x.Subject)) + "\r\n";
-
+            if (String.IsNullOrWhiteSpace(domain))
+                Log.Debug("Running Tests for " + specNames, "RunSpecTests");
+            else
+                Log.Debug("Running Tests for " + domain, "RunSpecTests");
+            
             foreach (var spec in specs)
                 spec.RunDescriptions(ref passing, ref logOut);
 
             Log.Debug(logOut, "RunSpecTests");
 
             if (ModInfo.DebugMode) {
-                if (passing)
-                    new Notifications.AlertNotification {
-                        Text = String.Format("All tests passed."),
-                        Color = VRage.Game.MyFontEnum.Green,
-                        DisplaySeconds = 5
-                    }.Raise();
-                else
-                    new Notifications.AlertNotification {
-                        Text = String.Format("Some tests failed, see log."),
-                        Color = VRage.Game.MyFontEnum.Red,
-                        DisplaySeconds = 5
-                    }.Raise();
+                String notificationMsg;
+                VRage.Game.MyFontEnum notificationColor;
+
+                if (passing) {
+                    notificationMsg = "All Tests passed";
+                    notificationColor = VRage.Game.MyFontEnum.Green;
+                }
+                else {
+                    notificationMsg = "Some tests failed";
+                    notificationColor = VRage.Game.MyFontEnum.Red;
+                }
+
+                if (!String.IsNullOrWhiteSpace(domain))
+                    notificationMsg += " for " + domain + ".";
+
+                new Notifications.AlertNotification {
+                    Text = notificationMsg,
+                    Color = notificationColor,
+                    DisplaySeconds = 10
+                }.Raise();
             }
 
             return passing;
@@ -62,7 +76,7 @@ namespace SEGarden.Testing {
         }
 
         protected void RunDescriptions(ref bool passed, ref String logOut) {
-            logOut += Subject + " - ";
+            logOut += "\r\n" + Subject + " - ";
 
             foreach (var description in Descriptions)
                 description.Run();
@@ -75,17 +89,16 @@ namespace SEGarden.Testing {
             );
 
             if (failedDescrs.Count > 0) {
-                logOut += " Failures:\r\n";
+                logOut += " Failures:\r\n\r\n";
                 passed = false;
             }
                 
-            logOut += "\r\n";
-
             foreach (var description in failedDescrs) {
                 logOut += "  " + description.Description + "\r\n";
 
                 foreach (var failureMsg in description.FailureMessages)
-                    logOut += "    " + failureMsg + "\r\n";
+                    logOut += "    " + 
+                        failureMsg.Replace("\r\n", "\r\n    ") + "\r\n";
 
                 logOut += "\r\n";
             }

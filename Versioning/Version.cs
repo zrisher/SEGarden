@@ -44,7 +44,7 @@ namespace SEGarden.Versioning {
             GitSHA = stream.getString();
         }
 
-        public void AddToByteSteam(ref ByteStream stream) {
+        public void AddToByteSteam(ByteStream stream) {
             if (stream == null) throw new ArgumentException("null stream");
 
             stream.addUShort(Major);

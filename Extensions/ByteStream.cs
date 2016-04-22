@@ -34,7 +34,7 @@ namespace SEGarden.Extensions {
     /// </summary>
     public static class ByteConverterExtension {
 
-        private static SEGarden.Logging.Logger Log = new Logging.Logger("ByteConverterExtension");
+        //private static SEGarden.Logging.Logger Log = new Logging.Logger("ByteConverterExtension");
 
         [StructLayout(LayoutKind.Explicit)]
         private struct FourByteUnion {
@@ -164,29 +164,62 @@ namespace SEGarden.Extensions {
         }
 
         public static void addString(this VRage.ByteStream stream, string s) {
-            if (s.Length > ushort.MaxValue) {
+            //Log.Trace(String.Format("Addings string \"{0}\"", s), "addString");
+            //Log.Trace(String.Format("Current stream pos: {0}", stream.Position), "addString");
+
+            if (s == null || s.Length > ushort.MaxValue) {
                 stream.addUShort(0);
+                //Log.Trace(String.Format("Writing string length: {0}", 0), "addString");
+                //Log.Trace(String.Format("Final stream pos: {0}", stream.Position), "addString");
                 return;
             }
 
             // Write length
             stream.addUShort((ushort)s.Length);
+            //Log.Trace(String.Format("Writing string length: {0}", (ushort)s.Length), "addString");
 
             // Write data
             char[] sarray = s.ToCharArray();
             for (ushort i = 0; i < s.Length; ++i)
                 stream.WriteByte((byte)sarray[i]);
+
+            //Log.Trace(String.Format("Final stream pos: {0}", stream.Position), "addString");
         }
 
         public static string getString(this VRage.ByteStream stream) {
+            //Log.Trace(String.Format("Deserializing stream at pos {0}", stream.Position), "getString");
             // Read length
             ushort len = stream.getUShort();
+            //Log.Trace(String.Format("Deserialized string length as {0}", len), "getString");
 
             // Read data
             char[] cstr = new char[len];
-            for (ushort i = 0; i < len; ++i)
-                cstr[i] = (char)stream.ReadByte();
+
+            if (len > 0)
+                for (ushort i = 0; i < len; ++i)
+                    cstr[i] = (char)stream.ReadByte();
+
+            //Log.Trace(String.Format("Finished deserializing stream at pos {0}", stream.Position), "getString");
             return new string(cstr);
+        }
+
+        public static void addStringList(this VRage.ByteStream stream, List<String> list) {
+            stream.addUShort((ushort)list.Count);
+            foreach (String element in list) {
+                stream.addString(element);
+            }
+        }
+
+        public static List<String> getStringList(this VRage.ByteStream stream) {
+            List<String> result = new List<String>();
+
+            ushort len = stream.getUShort();
+
+            for (ushort i = 0; i < len; ++i) {
+                result.Add(stream.getString());
+            }
+
+            return result;
         }
 
         public static void addBoolean(this VRage.ByteStream stream, bool b) {
