@@ -12,13 +12,22 @@ namespace SEGarden.Extensions {
         public static readonly char[] InvalidFileChars = Path.GetInvalidFileNameChars().
             Concat(Path.GetInvalidPathChars()).ToArray();
 
-        public static bool looseContains(this string bigString, string smallString) {
+        public static bool LooseContains(this string bigString, string smallString) {
             VRage.Exceptions.ThrowIf<ArgumentNullException>(bigString == null, "bigString");
             VRage.Exceptions.ThrowIf<ArgumentNullException>(smallString == null, "smallString");
 
             bigString = bigString.LowerRemoveWhitespace();
             smallString = smallString.LowerRemoveWhitespace();
             return bigString.Contains(smallString);
+        }
+
+        public static bool LooseContains(this IEnumerable<String> strings, String target) {
+            VRage.Exceptions.ThrowIf<ArgumentNullException>(strings == null, "strings");
+            VRage.Exceptions.ThrowIf<ArgumentNullException>(target == null, "target");
+
+            return strings.Any(x =>
+                x.LowerRemoveWhitespace().Contains(target.LowerRemoveWhitespace())
+            );
         }
 
         /// <remarks>

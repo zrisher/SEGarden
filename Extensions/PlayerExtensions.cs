@@ -14,7 +14,7 @@ namespace SEGarden.Extensions {
     /// <summary>
     /// Helper functions for SE Players
     /// </summary>
-    public static class PlayerExtension {
+    public static class PlayerExtensions {
 
         public static bool IsAdmin(this IMyPlayer player) {
             if (GardenGateway.RunningOn == Logic.RunLocation.Singleplayer)

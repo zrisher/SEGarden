@@ -120,6 +120,28 @@ namespace SEGarden.Extensions {
 			// Didn't encounter any factions different from the BigOwner[0] faction
 			return true;
 		}
+ * 
+ * 
+        /// <summary>
+        /// Get the main cockpit on the grid
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <remarks>Grids should only have 1 main cockpit</remarks>
+        /// <returns>The main cockpit as IMyCubeBlock if found, null otherwise</returns>
+        public static IMyCubeBlock getMainCockpit(this IMyCubeGrid grid) {
+            List<IMySlimBlock> cockpitBlocks = new List<IMySlimBlock>();
+
+            // Get all cockpit blocks
+            grid.GetBlocks(cockpitBlocks, (b => b.FatBlock != null && b.FatBlock is InGame.IMyShipController));
+
+            foreach (IMySlimBlock block in cockpitBlocks) {
+                if (TerminalPropertyExtensions.GetValueBool(block.FatBlock as IMyTerminalBlock, "MainCockpit")) {
+                    return block.FatBlock;
+                }
+            }
+            return null;
+        }
+
 
 	}
 

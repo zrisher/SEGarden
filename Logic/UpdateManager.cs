@@ -65,9 +65,6 @@ namespace SEGarden.Logic {
         private static MyConcurrentQueue<Action> UpdateActions =
             new MyConcurrentQueue<Action>(8);
 
-        // Definitely looking for a better way to do this
-        private static bool SEGardenAdded = false;
-
         #endregion
         #region Instance Fields
 
