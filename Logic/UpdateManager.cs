@@ -228,7 +228,9 @@ namespace SEGarden.Logic {
                 }
 
                 if (c == null) {
-                    Log.Warning("Return null ctr, aborting ", "EntityComponentCtr");
+                    //Log.Warning("Return null ctr, aborting ", "EntityComponentCtr");
+                    // Actually, expecting this allows people to use more 
+                    // complex registration logic
                     return;
                 }
 
