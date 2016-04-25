@@ -10,9 +10,9 @@ namespace SEGarden.Extensions {
 
     using Logging;
 
-    public static class EntityExtensions {
+    public static class IMyEntityExtensions {
 
-        private static Logger Log = new Logger("SEGarden.Extensions.EntityExtensions");
+        private static Logger Log = new Logger("SEGarden.Extensions.IMyEntityExtensions");
 
         public enum EntityType {
             Unknown,

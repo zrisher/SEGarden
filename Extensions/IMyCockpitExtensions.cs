@@ -13,7 +13,7 @@ namespace SEGarden.Extensions {
     using Logging;
 
     public static class CockpitExtensions {
-
+        /*
         private static Logger Log = new Logger("SEGarden.Extensions.CockpitExtensions");
 
 
@@ -27,7 +27,7 @@ namespace SEGarden.Extensions {
 
             return null;          
         }
-
+        */
     }
-
+    
 }

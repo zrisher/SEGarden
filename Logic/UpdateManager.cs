@@ -70,7 +70,6 @@ namespace SEGarden.Logic {
 
         private RunStatus Status = RunStatus.NotInitialized;
         private RunLocation RunningOn = RunLocation.Unknown;
-        private ulong Frame;
 
         // Used to manage initialization and termination
         // Includes both SessionComponents and EntityComponents
@@ -95,6 +94,8 @@ namespace SEGarden.Logic {
 
         #endregion
         #region Field Access Helpers
+
+        public static ulong Frame { get; private set; }
 
         /// <summary>
         /// Gets the constructor list mapped to a MyObjectBuilderType
@@ -281,10 +282,27 @@ namespace SEGarden.Logic {
             // init entity components with existing entities
             //Log.Trace("Running newly saved constructor on existing entities.", 
             //    "RememberEntityComponentConstructor");
+            MyObjectBuilder_EntityBase ob;
             HashSet<IMyEntity> allEntities = new HashSet<IMyEntity>();
             MyAPIGateway.Entities.GetEntities(allEntities);
             List<IMyEntity> targetEntities = allEntities.Where(
-                (e) => e.GetObjectBuilder().GetType() == entityType).
+                (e) => {
+                    try { ob = e.GetObjectBuilder(); }
+                    catch (Exception ex) {
+                        Log.Error("Error getting objectbuilder for " + 
+                            e.ToString() + ", error: \r\n" + ex, 
+                            "RegisterEntityComponentConstructorInternal");
+                        return false;
+                    }
+                    if (ob == null) {
+                        Log.Error("Failed to get object builder for " + 
+                            e.ToString(),
+                        "RegisterEntityComponentConstructorInternal");
+                        return false;
+                    }
+
+                    return ob.GetType() == entityType;                  
+                }).
                 ToList();
 
             foreach (IMyEntity entity in targetEntities)
@@ -375,8 +393,8 @@ namespace SEGarden.Logic {
                 try {
                     //Log.Debug("Initializing component " + c.ComponentName, "InitializeComponent");
                     c.Initialize();
-                    RegisterUpdatesForComponent(c, terminateOnError);
-                    c.Status = RunStatus.Running;
+                    if (c.IsRunning)
+                        RegisterUpdatesForComponent(c, terminateOnError);
                 }
                 catch (Exception e) {
                     Log.Error("Error Initializing component " + c.ComponentName + "  : " + e, "InitializeComponent");

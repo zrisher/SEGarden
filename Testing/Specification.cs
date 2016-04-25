@@ -23,20 +23,20 @@ namespace SEGarden.Testing {
         //      error - error message
         //     
         public static bool RunSpecTests(
-            List<Specification> specs, String domain = ""
+            String domain, List<Specification> specs
         ) {
             if (specs == null)
                 throw new ArgumentException("Provided specs are null");
 
             bool passing = true;
             String specNames = String.Join(", ", specs.Select(x => x.Subject));
-            String logOut = "\r\nTest results:\r\n";
 
             if (String.IsNullOrWhiteSpace(domain))
                 Log.Debug("Running Tests for " + specNames, "RunSpecTests");
             else
                 Log.Debug("Running Tests for " + domain, "RunSpecTests");
-            
+
+            String logOut = "Test results:";
             foreach (var spec in specs)
                 spec.RunDescriptions(ref passing, ref logOut);
 

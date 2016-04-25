@@ -72,11 +72,13 @@ namespace SEGarden {
             Messages.Initialize();
 
             if (ModInfo.DebugMode) {
-                Specification.RunSpecTests(new List<Specification>() {
-                    new ItemCountAggregateDefinitionSpec(),
-                    new ItemCountDefinitionSpec()
-                }, 
-                "SEGarden");
+                Specification.RunSpecTests(
+                    "SEGarden",
+                    new List<Specification>() {
+                        new ItemCountAggregateDefinitionSpec(),
+                        new ItemCountDefinitionSpec()
+                    }
+                );
             }
 
             base.Initialize();

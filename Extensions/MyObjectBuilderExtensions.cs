@@ -13,11 +13,12 @@ namespace SEGarden.Extensions.Objectbuilders {
 
     /// <summary>
     /// </summary>
-    public static class ObjectBuildersExtension {
+    public static class MyObjectBuilderExtensions {
+
+        /*
 
         private static Logger Log = 
             new Logger("SEGarden.Extensions.Objectbuilders.ObjectBuildersExtension");
-
 
         /// <summary>
         /// TODO: Check the rest of the nulls recursively
@@ -96,5 +97,6 @@ namespace SEGarden.Extensions.Objectbuilders {
 
         }
 
+        */
     }
 }

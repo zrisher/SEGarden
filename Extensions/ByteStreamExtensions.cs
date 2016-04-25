@@ -5,6 +5,7 @@ using System.Linq;
 //using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
+using VRage;
 using VRage.Library;
 using VRageMath;
 
@@ -32,7 +33,7 @@ namespace SEGarden.Extensions {
     /// Thanks to Rynchodon for the ByteUnions:
     /// github.com/rynchodon/Autopilot
     /// </summary>
-    public static class ByteConverterExtension {
+    public static class ByteStreamExtensions {
 
         //private static SEGarden.Logging.Logger Log = new Logging.Logger("ByteConverterExtension");
 
@@ -91,44 +92,44 @@ namespace SEGarden.Extensions {
         }
 
 
-        public static void addByte(this VRage.ByteStream stream, byte theByte) {
+        public static void addByte(this ByteStream stream, byte theByte) {
             stream.WriteByte(theByte);
         }
 
-        public static byte getByte(this VRage.ByteStream stream) {
+        public static byte getByte(this ByteStream stream) {
             return stream.ReadByte();
         }
 
 
-        public static void addByteArray(this VRage.ByteStream stream, byte[] bytes) {
+        public static void addByteArray(this ByteStream stream, byte[] bytes) {
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        public static byte[] getByteArray(this VRage.ByteStream stream, int count) {
+        public static byte[] getByteArray(this ByteStream stream, int count) {
             byte[] bytes = new byte[count];
             stream.Read(bytes, 0, count);
             return bytes;
         }
 
-        public static void addUShort(this VRage.ByteStream stream, ushort v) {
+        public static void addUShort(this ByteStream stream, ushort v) {
             for (byte i = 0; i < sizeof(ushort); ++i)
                 stream.WriteByte((byte)((v >> (i * 8)) & 0xFF));
         }
 
-        public static ushort getUShort(this VRage.ByteStream stream) {
+        public static ushort getUShort(this ByteStream stream) {
             ushort v = 0;
             for (byte i = 0; i < sizeof(ushort); ++i)
                 v |= (ushort)((ushort)(stream.ReadByte()) << (i * 8));
             return v;
         }
 
-        public static void addLong(this VRage.ByteStream stream, long v) {
+        public static void addLong(this ByteStream stream, long v) {
             ulong u = (ulong)v;
             for (byte i = 0; i < sizeof(ulong); ++i)
                 stream.WriteByte((byte)((u >> (i * 8)) & 0xFF));
         }
 
-        public static long getLong(this VRage.ByteStream stream) {
+        public static long getLong(this ByteStream stream) {
             ulong v = 0;
             for (byte i = 0; i < sizeof(ulong); ++i) {
                 //Log.Trace("Removing one byte from steam at position: " + stream.Position + " / " + stream.Length, "getLong");
@@ -138,32 +139,32 @@ namespace SEGarden.Extensions {
             return (long)v;
         }
 
-        public static void addUlong(this VRage.ByteStream stream, ulong u) {
+        public static void addUlong(this ByteStream stream, ulong u) {
             for (byte i = 0; i < sizeof(ulong); ++i)
                 stream.WriteByte((byte)((u >> (i * 8)) & 0xFF));
         }
 
-        public static ulong getUlong(this VRage.ByteStream stream) {
+        public static ulong getUlong(this ByteStream stream) {
             ulong v = 0;
             for (byte i = 0; i < sizeof(ulong); ++i)
                 v |= (ulong)((ulong)(stream.ReadByte()) << (i * 8));
             return v;
         }
 
-        public static void addDouble(this VRage.ByteStream stream, double v) {
+        public static void addDouble(this ByteStream stream, double v) {
             var union = new EightByteUnion();
             union.Double = v;
             byte[] bytes = union.Bytes;
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        public static double getDouble(this VRage.ByteStream stream) {
+        public static double getDouble(this ByteStream stream) {
             var union = new EightByteUnion();
             union.Bytes = stream.getByteArray(8);
             return union.Double;
         }
 
-        public static void addString(this VRage.ByteStream stream, string s) {
+        public static void addString(this ByteStream stream, string s) {
             //Log.Trace(String.Format("Addings string \"{0}\"", s), "addString");
             //Log.Trace(String.Format("Current stream pos: {0}", stream.Position), "addString");
 
@@ -186,7 +187,7 @@ namespace SEGarden.Extensions {
             //Log.Trace(String.Format("Final stream pos: {0}", stream.Position), "addString");
         }
 
-        public static string getString(this VRage.ByteStream stream) {
+        public static string getString(this ByteStream stream) {
             //Log.Trace(String.Format("Deserializing stream at pos {0}", stream.Position), "getString");
             // Read length
             ushort len = stream.getUShort();
@@ -203,14 +204,14 @@ namespace SEGarden.Extensions {
             return new string(cstr);
         }
 
-        public static void addStringList(this VRage.ByteStream stream, List<String> list) {
+        public static void addStringList(this ByteStream stream, List<String> list) {
             stream.addUShort((ushort)list.Count);
             foreach (String element in list) {
                 stream.addString(element);
             }
         }
 
-        public static List<String> getStringList(this VRage.ByteStream stream) {
+        public static List<String> getStringList(this ByteStream stream) {
             List<String> result = new List<String>();
 
             ushort len = stream.getUShort();
@@ -222,15 +223,15 @@ namespace SEGarden.Extensions {
             return result;
         }
 
-        public static void addBoolean(this VRage.ByteStream stream, bool b) {
+        public static void addBoolean(this ByteStream stream, bool b) {
             stream.WriteByte(Convert.ToByte(b));
         }
 
-        public static bool getBoolean(this VRage.ByteStream stream) {
+        public static bool getBoolean(this ByteStream stream) {
             return Convert.ToBoolean(stream.ReadByte());
         }
 
-        public static void addLongList(this VRage.ByteStream stream, List<long> L) {
+        public static void addLongList(this ByteStream stream, List<long> L) {
             if (L == null) {
                 stream.addUShort(0);
                 //Log.Info("Adding long list of " + 0 + " at " + stream.Position + " / " + stream.Length, "addLongList");
@@ -246,7 +247,7 @@ namespace SEGarden.Extensions {
                 stream.addLong(l);
         }
 
-        public static List<long> getLongList(this VRage.ByteStream stream) {
+        public static List<long> getLongList(this ByteStream stream) {
             List<long> L = new List<long>();
 
             // Read length
@@ -265,13 +266,13 @@ namespace SEGarden.Extensions {
             return L;
         }
 
-        public static void addVector3D(this VRage.ByteStream stream, Vector3D v) {
+        public static void addVector3D(this ByteStream stream, Vector3D v) {
             stream.addDouble(v.X);
             stream.addDouble(v.Y);
             stream.addDouble(v.Z);
         }
 
-        public static Vector3D getVector3D(this VRage.ByteStream stream) {
+        public static Vector3D getVector3D(this ByteStream stream) {
             Vector3D v = new Vector3D();
             v.X = stream.getDouble();
             v.Y = stream.getDouble();
@@ -280,14 +281,14 @@ namespace SEGarden.Extensions {
             return v;
         }
 
-        public static void addDateTime(this VRage.ByteStream stream, DateTime v) {
+        public static void addDateTime(this ByteStream stream, DateTime v) {
             var union = new EightByteUnion();
             union.DateTime = v;
             byte[] bytes = union.Bytes;
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        public static DateTime getDateTime(this VRage.ByteStream stream) {
+        public static DateTime getDateTime(this ByteStream stream) {
             var union = new EightByteUnion();
             union.Bytes = stream.getByteArray(8);
             return union.DateTime;
