@@ -289,13 +289,13 @@ namespace SEGarden.Logic {
                 (e) => {
                     try { ob = e.GetObjectBuilder(); }
                     catch (Exception ex) {
-                        Log.Error("Error getting objectbuilder for " + 
+                        Log.Debug("Error getting objectbuilder for " + 
                             e.ToString() + ", error: \r\n" + ex, 
                             "RegisterEntityComponentConstructorInternal");
                         return false;
                     }
                     if (ob == null) {
-                        Log.Error("Failed to get object builder for " + 
+                        Log.Debug("Failed to get object builder for " + 
                             e.ToString(),
                         "RegisterEntityComponentConstructorInternal");
                         return false;
